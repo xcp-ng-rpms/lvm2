@@ -1,0 +1,38 @@
+ WHATS_NEW        | 1 +
+ tools/lvcreate.c | 5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 5260321..1147dad 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,5 +1,6 @@
+ Version 2.02.131 - 
+ =====================================
++  Disallow usage of --stripe and --stripesize when creating cache pool.
+   Swapping of LV identifiers handles more complex LVs.
+   Fix VG metadata comparison failure while scanning the VG for lvmetad.
+   Ignore persistent cache if configuration changed. (2.02.127)
+diff --git a/tools/lvcreate.c b/tools/lvcreate.c
+index 364a16a..7bba761 100644
+--- a/tools/lvcreate.c
++++ b/tools/lvcreate.c
+@@ -770,7 +770,8 @@ static int _lvcreate_params(struct cmd_context *cmd,
+ 					    CACHE_POOL_ARGS,
+ 					    LVCREATE_ARGS,
+ 					    POOL_ARGS,
+-					    SIZE_ARGS,
++					    extents_ARG,
++					    size_ARG,
+ 					    cache_ARG,
+ 					    chunksize_ARG,
+ 					    -1))
+@@ -1096,6 +1097,8 @@ static int _determine_cache_argument(struct volume_group *vg,
+ 		}
+ 		/* FIXME How to handle skip flag? */
+ 		if (arg_from_list_is_set(cmd, "is unsupported with cache conversion",
++					 stripes_ARG,
++					 stripesize_ARG,
+ 					 setactivationskip_ARG,
+ 					 ignoreactivationskip_ARG,
+ 					 -1))

@@ -1,0 +1,104 @@
+ configure             | 20 ++++++++++----------
+ configure.in          |  4 ++--
+ lib/device/dev-type.c |  3 +--
+ 3 files changed, 13 insertions(+), 14 deletions(-)
+
+diff --git a/configure b/configure
+index 3d650a1..31ceb35 100755
+--- a/configure
++++ b/configure
+@@ -11217,12 +11217,12 @@ if test -n "$BLKID_CFLAGS"; then
+     pkg_cv_BLKID_CFLAGS="$BLKID_CFLAGS"
+  elif test -n "$PKG_CONFIG"; then
+     if test -n "$PKG_CONFIG" && \
+-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"blkid >= 2.24\""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "blkid >= 2.24") 2>&5
++    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"blkid >= 2.23\""; } >&5
++  ($PKG_CONFIG --exists --print-errors "blkid >= 2.23") 2>&5
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; then
+-  pkg_cv_BLKID_CFLAGS=`$PKG_CONFIG --cflags "blkid >= 2.24" 2>/dev/null`
++  pkg_cv_BLKID_CFLAGS=`$PKG_CONFIG --cflags "blkid >= 2.23" 2>/dev/null`
+ 		      test "x$?" != "x0" && pkg_failed=yes
+ else
+   pkg_failed=yes
+@@ -11234,12 +11234,12 @@ if test -n "$BLKID_LIBS"; then
+     pkg_cv_BLKID_LIBS="$BLKID_LIBS"
+  elif test -n "$PKG_CONFIG"; then
+     if test -n "$PKG_CONFIG" && \
+-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"blkid >= 2.24\""; } >&5
+-  ($PKG_CONFIG --exists --print-errors "blkid >= 2.24") 2>&5
++    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"blkid >= 2.23\""; } >&5
++  ($PKG_CONFIG --exists --print-errors "blkid >= 2.23") 2>&5
+   ac_status=$?
+   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+   test $ac_status = 0; }; then
+-  pkg_cv_BLKID_LIBS=`$PKG_CONFIG --libs "blkid >= 2.24" 2>/dev/null`
++  pkg_cv_BLKID_LIBS=`$PKG_CONFIG --libs "blkid >= 2.23" 2>/dev/null`
+ 		      test "x$?" != "x0" && pkg_failed=yes
+ else
+   pkg_failed=yes
+@@ -11260,9 +11260,9 @@ else
+         _pkg_short_errors_supported=no
+ fi
+         if test $_pkg_short_errors_supported = yes; then
+-	        BLKID_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "blkid >= 2.24" 2>&1`
++	        BLKID_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "blkid >= 2.23" 2>&1`
+         else
+-	        BLKID_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "blkid >= 2.24" 2>&1`
++	        BLKID_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "blkid >= 2.23" 2>&1`
+         fi
+ 	# Put the nasty error message in config.log where it belongs
+ 	echo "$BLKID_PKG_ERRORS" >&5
+@@ -11270,7 +11270,7 @@ fi
+ 	if test "$BLKID_WIPING" = maybe; then
+ 				BLKID_WIPING=no
+ 			   else
+-			        as_fn_error $? "bailing out... blkid library >= 2.24 is required" "$LINENO" 5
++			        as_fn_error $? "bailing out... blkid library >= 2.23 is required" "$LINENO" 5
+ 			   fi
+ elif test $pkg_failed = untried; then
+      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+@@ -11278,7 +11278,7 @@ $as_echo "no" >&6; }
+ 	if test "$BLKID_WIPING" = maybe; then
+ 				BLKID_WIPING=no
+ 			   else
+-			        as_fn_error $? "bailing out... blkid library >= 2.24 is required" "$LINENO" 5
++			        as_fn_error $? "bailing out... blkid library >= 2.23 is required" "$LINENO" 5
+ 			   fi
+ else
+ 	BLKID_CFLAGS=$pkg_cv_BLKID_CFLAGS
+diff --git a/configure.in b/configure.in
+index 21ce581..6f1cd5b 100644
+--- a/configure.in
++++ b/configure.in
+@@ -1193,12 +1193,12 @@ AC_MSG_RESULT($BLKID_WIPING)
+ 
+ if test "$BLKID_WIPING" != no; then
+ 	pkg_config_init
+-	PKG_CHECK_MODULES(BLKID, blkid >= 2.24,
++	PKG_CHECK_MODULES(BLKID, blkid >= 2.23,
+ 			  [test "$BLKID_WIPING" = maybe && BLKID_WIPING=yes],
+ 			  [if test "$BLKID_WIPING" = maybe; then
+ 				BLKID_WIPING=no
+ 			   else
+-			        AC_MSG_ERROR([bailing out... blkid library >= 2.24 is required])
++			        AC_MSG_ERROR([bailing out... blkid library >= 2.23 is required])
+ 			   fi])
+ 	if test "$BLKID_WIPING" = yes; then
+ 		BLKID_PC="blkid"
+diff --git a/lib/device/dev-type.c b/lib/device/dev-type.c
+index 82e37e0..ebc8d82 100644
+--- a/lib/device/dev-type.c
++++ b/lib/device/dev-type.c
+@@ -625,8 +625,7 @@ static int _wipe_known_signatures_with_blkid(struct device *dev, const char *nam
+ 						 BLKID_SUBLKS_TYPE |
+ 						 BLKID_SUBLKS_USAGE |
+ 						 BLKID_SUBLKS_VERSION |
+-						 BLKID_SUBLKS_MAGIC |
+-						 BLKID_SUBLKS_BADCSUM);
++						 BLKID_SUBLKS_MAGIC);
+ 
+ 	while (!blkid_do_probe(probe)) {
+ 		if ((r_wipe = _blkid_wipe(probe, dev, name, types_to_exclude, types_no_prompt, yes, force)) == 1)

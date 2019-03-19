@@ -1,0 +1,74 @@
+ WHATS_NEW        | 4 ++++
+ tools/pvscan.c   | 9 +++++++++
+ tools/tools.h    | 2 ++
+ tools/vgchange.c | 4 ++--
+ 4 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 945b282..8c87a92 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -2,6 +2,10 @@ Version 2.02.142 -
+ ====================================
+   Do not check for suspended devices if scanning for lvmetad update.
+ 
++Version 2.02.140 -
++===================================
++  Restore background polling processing during auto-activation (2.02.119).
++
+ Version 2.02.133 - 
+ ======================================
+   Check for enough space in thin-pool in command before creating new thin.
+diff --git a/tools/pvscan.c b/tools/pvscan.c
+index 3adb91c..b3b5911 100644
+--- a/tools/pvscan.c
++++ b/tools/pvscan.c
+@@ -154,6 +154,15 @@ static int _auto_activation_handler(struct cmd_context *cmd,
+ 		goto out;
+ 	}
+ 
++	/*
++	 * After sucessfull activation we need to initialise polling
++	 * for all activated LVs in a VG. Possible enhancement would
++	 * be adding --poll y|n cmdline option for pvscan and call
++	 * init_background_polling routine in autoactivation handler.
++	 */
++	if (!(vgchange_background_polling(vg->cmd, vg)))
++		goto_out;
++
+ 	r = 1;
+ 
+ out:
+diff --git a/tools/tools.h b/tools/tools.h
+index 4ed893f..634b101 100644
+--- a/tools/tools.h
++++ b/tools/tools.h
+@@ -183,4 +183,6 @@ int mirror_remove_missing(struct cmd_context *cmd,
+ int vgchange_activate(struct cmd_context *cmd, struct volume_group *vg,
+ 		       activation_change_t activate);
+ 
++int vgchange_background_polling(struct cmd_context *cmd, struct volume_group *vg);
++
+ #endif
+diff --git a/tools/vgchange.c b/tools/vgchange.c
+index 1d3c64a..d572220 100644
+--- a/tools/vgchange.c
++++ b/tools/vgchange.c
+@@ -174,7 +174,7 @@ static int _vgchange_monitoring(struct cmd_context *cmd, struct volume_group *vg
+ 	return r;
+ }
+ 
+-static int _vgchange_background_polling(struct cmd_context *cmd, struct volume_group *vg)
++int vgchange_background_polling(struct cmd_context *cmd, struct volume_group *vg)
+ {
+ 	int polled;
+ 
+@@ -999,7 +999,7 @@ static int vgchange_single(struct cmd_context *cmd, const char *vg_name,
+ 
+ 	if (!arg_count(cmd, refresh_ARG) &&
+ 	    background_polling())
+-		if (!_vgchange_background_polling(cmd, vg))
++		if (!vgchange_background_polling(cmd, vg))
+ 			return_ECMD_FAILED;
+ 
+ 	if (arg_is_set(cmd, lockstart_ARG)) {

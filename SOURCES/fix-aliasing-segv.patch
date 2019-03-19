@@ -1,0 +1,48 @@
+diff --git a/lib/cache/lvmcache.c b/lib/cache/lvmcache.c
+index cfa1d5f..af52d5b 100644
+--- a/lib/cache/lvmcache.c
++++ b/lib/cache/lvmcache.c
+@@ -1167,7 +1167,8 @@ void lvmcache_del(struct lvmcache_info *info)
+ 	return;
+ }
+ 
+-static int _lvmcache_update_pvid(struct lvmcache_info *info, const char *pvid)
++static int _lvmcache_update_pvid(struct lvmcache_info *info, const char *pvid,
++				 const char *existing_pvid)
+ {
+ 	/*
+ 	 * Nothing to do if already stored with same pvid.
+@@ -1178,6 +1179,8 @@ static int _lvmcache_update_pvid(struct lvmcache_info *info, const char *pvid)
+ 		return 1;
+ 	if (*info->dev->pvid)
+ 		dm_hash_remove(_pvid_hash, info->dev->pvid);
++	if (existing_pvid && *existing_pvid)
++		dm_hash_remove(_pvid_hash, existing_pvid);
+ 	strncpy(info->dev->pvid, pvid, sizeof(info->dev->pvid));
+ 	if (!dm_hash_insert(_pvid_hash, pvid, info)) {
+ 		log_error("_lvmcache_update: pvid insertion failed: %s", pvid);
+@@ -1689,6 +1692,7 @@ struct lvmcache_info *lvmcache_add(struct labeller *labeller, const char *pvid,
+ 	struct dev_types *dt = fmt->cmd->dev_types;
+ 	struct label *label;
+ 	struct lvmcache_info *existing, *info;
++	const char *existing_pvid = NULL;
+ 	char pvid_s[ID_LEN + 1] __attribute__((aligned(8)));
+ 	struct lvmcache_vgsummary vgsummary = {
+ 		.vgname = vgname,
+@@ -1879,6 +1883,7 @@ struct lvmcache_info *lvmcache_add(struct labeller *labeller, const char *pvid,
+ 		 * This happens when running pvcreate on an existing PV.
+ 		 */
+ 		if (strcmp(pvid_s, existing->dev->pvid))  {
++			existing_pvid = existing->dev->pvid;
+ 			log_verbose("Replacing dev %s pvid %s with dev %s pvid %s",
+ 				    dev_name(existing->dev), existing->dev->pvid,
+ 				    dev_name(dev), pvid_s);
+@@ -1903,7 +1908,7 @@ struct lvmcache_info *lvmcache_add(struct labeller *labeller, const char *pvid,
+ 	info->fmt = labeller->fmt;
+ 	info->status |= CACHE_INVALID;
+ 
+-	if (!_lvmcache_update_pvid(info, pvid_s)) {
++	if (!_lvmcache_update_pvid(info, pvid_s, existing_pvid)) {
+ 		if (!existing) {
+ 			dm_free(info);
+ 			label_destroy(label);

@@ -1,0 +1,42 @@
+# HG changeset patch
+# Parent 316661c98f32cb9ae013623c08ed505db7ee055a
+# User Stefano Panella <stefano.panella@citrix.com>
+We must be able to use lvchange even when metadata_read_only is 1
+
+Versions prior to CentOS 7 update, allowed us to do lvchange
+operations even when metadata_read_only was set to 1.
+lvchange (as well as others supposedly read-only opeations) has
+the capability to fix the metadata if there are inconsistencies.
+
+If the metadata_read_only flag is set we are safe, so there is no
+need to prevent lvchange from running.
+
+Signed-off-by: Stefano Panella <stefano.panella@citrix.com>
+Acked-by: Germano Percossi <germano.percossi@citrix.com>
+
+diff --git a/lib/locking/locking.c b/lib/locking/locking.c
+--- a/lib/locking/locking.c
++++ b/lib/locking/locking.c
+@@ -23,6 +23,7 @@
+ #include "defaults.h"
+ #include "lvmcache.h"
+ #include "lvm-signal.h"
++#include "../../tools/tools.h"
+ 
+ #include <assert.h>
+ #include <sys/stat.h>
+@@ -265,8 +266,12 @@
+ 		goto out;
+ 	}
+ 
+-	if (cmd->metadata_read_only && lck_type == LCK_WRITE &&
+-	    strcmp(resource, VG_GLOBAL)) {
++	if (cmd->command != NULL &&
++	    cmd->command->name != NULL &&
++	    !strcmp(cmd->command->name, "lvchange")) {
++		;
++	} else if (cmd->metadata_read_only && lck_type == LCK_WRITE &&
++		strcmp(resource, VG_GLOBAL)) {
+ 		log_error("Operation prohibited while global/metadata_read_only is set.");
+ 		goto out;
+ 	}
