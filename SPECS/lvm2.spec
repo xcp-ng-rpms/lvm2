@@ -3,7 +3,7 @@
 %define enable_cache 1
 %define enable_cluster 1
 %define enable_cmirror 1
-%define enable_lvmetad 1
+%define enable_lvmetad 0
 %define enable_lvmlockd 1
 %define enable_lvmpolld 1
 %define enable_python 1
@@ -52,7 +52,7 @@ Summary: Userland logical volume management tools
 Name: lvm2
 Epoch: 7
 Version: 2.02.130
-Release: 5.xs+1.2
+Release: 6.xs+1.2
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
@@ -280,6 +280,8 @@ systemctl start lvm2-lvmpolld.socket
 %{_sbindir}/lvmdump
 %if %{enable_lvmetad}
 %{_sbindir}/lvmetad
+%else
+%exclude %{_sbindir}/lvmetad
 %endif
 %if %{enable_lvmpolld}
 %{_sbindir}/lvmpolld
@@ -389,6 +391,9 @@ systemctl start lvm2-lvmpolld.socket
 %if %{enable_lvmetad}
 %{_mandir}/man8/lvmetad.8.gz
 %{_udevdir}/69-dm-lvm-metad.rules
+%else
+%exclude %{_mandir}/man8/lvmetad.8.gz
+%exclude %{_udevdir}/69-dm-lvm-metad.rules
 %endif
 %if %{enable_lvmpolld}
 %{_mandir}/man8/lvmpolld.8.gz
@@ -417,6 +422,10 @@ systemctl start lvm2-lvmpolld.socket
 %{_unitdir}/lvm2-lvmetad.socket
 %{_unitdir}/lvm2-lvmetad.service
 %{_unitdir}/lvm2-pvscan@.service
+%else
+%exclude %{_unitdir}/lvm2-lvmetad.socket
+%exclude %{_unitdir}/lvm2-lvmetad.service
+%exclude %{_unitdir}/lvm2-pvscan@.service
 %endif
 %if %{enable_lvmpolld}
 %{_unitdir}/lvm2-lvmpolld.socket
@@ -689,6 +698,8 @@ is not used as the system init process.
 %endif
 %if %{enable_lvmetad}
 %{_sysconfdir}/rc.d/init.d/lvm2-lvmetad
+%else
+%exclude %{_sysconfdir}/rc.d/init.d/lvm2-lvmetad
 %endif
 %if %{enable_lvmpolld}
 %{_sysconfdir}/rc.d/init.d/lvm2-lvmpolld
