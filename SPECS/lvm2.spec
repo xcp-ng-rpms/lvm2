@@ -52,7 +52,7 @@ Summary: Userland logical volume management tools
 Name: lvm2
 Epoch: 7
 Version: 2.02.130
-Release: 6.xs+1.2
+Release: 6.xs+1.2%{dist}
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
