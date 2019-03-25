@@ -81,6 +81,7 @@ Patch17: lvm2-2_02_140-restore-background-polling-processing-during-auto-activat
 Patch18: lvm2-2_02_155-fix-flushing-for-mirror-target.patch
 Patch19: lvm2-2_02_131-fix-devices-filter-to-be-applied-before-disk-accessing-filters.patch
 
+BuildRequires: gcc
 BuildRequires: libselinux-devel >= %{libselinux_version}, libsepol-devel
 BuildRequires: libblkid-devel >= %{util_linux_version}
 BuildRequires: ncurses-devel
