@@ -1,0 +1,32 @@
+ WHATS_NEW               | 1 +
+ lib/activate/activate.c | 5 ++++-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 762553f..776c739 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,5 +1,6 @@
+ Version 2.02.178 - 
+ =====================================
++  Do not report LV as remotely active when it's locally exclusive in cluster.
+   Add deprecate messages for usage of mirrors with mirrorlog.
+   Restore pvmove support for wide-clustered active volumes (2.02.177).
+   Avoid non-exclusive activation of exclusive segment types.
+diff --git a/lib/activate/activate.c b/lib/activate/activate.c
+index 7a37130..b67e7b1 100644
+--- a/lib/activate/activate.c
++++ b/lib/activate/activate.c
+@@ -1543,8 +1543,11 @@ static int _lv_is_active(const struct logical_volume *lv,
+ 	if (skip_cluster_query)
+ 		goto out;
+ 
+-	if ((r = cluster_lock_held(lv->lvid.s, "", &e)) >= 0)
++	if ((r = cluster_lock_held(lv->lvid.s, "", &e)) >= 0) {
++		if (l && e)
++			r = 0; /* exclusive locally */
+ 		goto out;
++	}
+ 
+ 	/*
+ 	 * If lock query is not supported (due to interfacing with old
