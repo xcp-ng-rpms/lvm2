@@ -1,0 +1,72 @@
+From 7d11e75581640a79014d41532c570e4a5d7b2a62 Mon Sep 17 00:00:00 2001
+From: Liang Dai <liang.dai1@citrix.com>
+Date: Mon, 2 Jul 2018 19:31:30 +0800
+Subject: [PATCH] [PATCH] Revert "vgcreate, pvcreate, vgextend: don't use a
+ device with  duplicates
+
+This reverts commit 86f92714574487cce6a9de785ba2ff93b23a98f7.
+
+There is a scenario in a enviroment with remote storage and multiple
+paths should work.
+---
+ lib/cache/lvmcache.c | 11 -----------
+ lib/cache/lvmcache.h |  2 --
+ tools/toollib.c      |  9 ---------
+ 3 files changed, 22 deletions(-)
+
+diff --git a/lib/cache/lvmcache.c b/lib/cache/lvmcache.c
+index 5d4732c..3774ad9 100644
+--- a/lib/cache/lvmcache.c
++++ b/lib/cache/lvmcache.c
+@@ -1519,17 +1519,6 @@ const char *lvmcache_pvid_from_devname(struct cmd_context *cmd,
+ 	return dev->pvid;
+ }
+ 
+-int lvmcache_pvid_in_unchosen_duplicates(const char *pvid)
+-{
+-	struct device_list *devl;
+-
+-	dm_list_iterate_items(devl, &_unused_duplicate_devs) {
+-		if (!strncmp(devl->dev->pvid, pvid, ID_LEN))
+-			return 1;
+-	}
+-	return 0;
+-}
+-
+ static int _free_vginfo(struct lvmcache_vginfo *vginfo)
+ {
+ 	struct lvmcache_vginfo *primary_vginfo, *vginfo2;
+diff --git a/lib/cache/lvmcache.h b/lib/cache/lvmcache.h
+index 847c208..26211f6 100644
+--- a/lib/cache/lvmcache.h
++++ b/lib/cache/lvmcache.h
+@@ -213,6 +213,4 @@ int lvmcache_dev_is_unchosen_duplicate(struct device *dev);
+ 
+ void lvmcache_remove_unchosen_duplicate(struct device *dev);
+ 
+-int lvmcache_pvid_in_unchosen_duplicates(const char *pvid);
+-
+ #endif
+diff --git a/tools/toollib.c b/tools/toollib.c
+index 0509b5e..71e9593 100644
+--- a/tools/toollib.c
++++ b/tools/toollib.c
+@@ -5035,15 +5035,6 @@ static int _pvcreate_check_single(struct cmd_context *cmd,
+ 		return 1;
+ 	}
+ 
+-	/*
+-	 * Don't allow using a device with duplicates.
+-	 */
+-	if (lvmcache_pvid_in_unchosen_duplicates(pd->dev->pvid)) {
+-		log_error("Cannot use device %s with duplicates.", pd->name);
+-		dm_list_move(&pp->arg_fail, &pd->list);
+-		return 1;
+-	}
+-
+ 	/*
+ 	 * What kind of device is this: an orphan PV, an uninitialized/unused
+ 	 * device, a PV used in a VG.
+-- 
+2.17.1
+

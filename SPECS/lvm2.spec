@@ -1,49 +1,61 @@
-%define device_mapper_version 1.02.107
+%global device_mapper_version 1.02.146
 
-%define enable_cache 1
-%define enable_cluster 1
-%define enable_cmirror 1
-%define enable_lvmetad 0
-%define enable_lvmlockd 1
-%define enable_lvmpolld 1
-%define enable_python 1
-%define enable_thin 1
+%global enable_cache 1
+%global enable_cluster 1
+%global enable_cmirror 1
+%global enable_lvmetad 0
+%global enable_lvmlockd 1
+%global enable_lvmpolld 1
+%global enable_python 1
+%global enable_thin 1
+%global enable_dmfilemapd 1
 
-%define systemd_version 189-3
-%define dracut_version 002-18
-%define util_linux_version 2.23
-%define bash_version 4.0
-%define corosync_version 1.99.9-1
-%define resource_agents_version 3.9.5-25
-%define dlm_version 3.99.1-1
-%define libselinux_version 1.30.19-4
-%define persistent_data_version 0.5.5-1
-%define sanlock_version 3.2.4-1
+%global systemd_version 189-3
+%global dracut_version 002-18
+%global util_linux_version 2.23
+%global bash_version 4.0
+%global corosync_version 1.99.9-1
+%global resource_agents_version 3.9.5-25
+%global dlm_version 4.0.6-2
+%global libselinux_version 1.30.19-4
+%global persistent_data_version 0.7.0-0.1.rc6
+%global sanlock_version 3.3.0-1
+%global boom_version 0.8.5
 
-%define enable_lockd_sanlock %{enable_lvmlockd}
-%define enable_lockd_dlm %{enable_lvmlockd}
+%global enable_lockd_sanlock %{enable_lvmlockd}
+%global enable_lockd_dlm %{enable_lvmlockd}
+
+%global boom_pkgname lvm2-python-boom
+%global boom_version 0.8.5
+%global boom_summary A set of libraries and tools for managing boot loader entries
+%global boom_dir boom-%{boom_version}
 
 %if 0%{?rhel}
-  %ifnarch i686 x86_64 s390x
-    %define enable_cluster 0
-    %define enable_cmirror 0
-    %define enable_lockd_dlm 0
+  %ifnarch i686 x86_64 ppc64le s390x
+    %global enable_cluster 0
+    %global enable_cmirror 0
+    %global enable_lockd_dlm 0
   %endif
 
-  %ifnarch x86_64 ppc64le ppc64 aarch64
-    %define enable_lockd_sanlock 0
+  %ifnarch x86_64 ppc64 aarch64
+    %global enable_lockd_sanlock 0
   %endif
+%endif
+
+%ifnarch s390x s390
+    %global enable_boom 1
+%else
+    %global enable_boom 0
 %endif
 
 %if %{enable_cluster}
-  %define configure_cluster --with-cluster=internal --with-clvmd=corosync
+  %global configure_cluster --with-cluster=internal --with-clvmd=corosync
   %if %{enable_cmirror}
-    %define configure_cmirror --enable-cmirrord
+    %global configure_cmirror --enable-cmirrord
   %endif
 %else
-    %define configure_cluster --with-cluster=internal --with-clvmd=none
+    %global configure_cluster --with-cluster=internal --with-clvmd=none
 %endif
-
 
 # Do not reset Release to 1 unless both lvm2 and device-mapper 
 # versions are increased together.
@@ -51,35 +63,59 @@
 Summary: Userland logical volume management tools 
 Name: lvm2
 Epoch: 7
-Version: 2.02.130
-Release: 6.xs+1.2%{dist}
+Version: 2.02.177
+Release: 6.xs+1.2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
 URL: http://sources.redhat.com/lvm2
 #Source0: ftp://sources.redhat.com/pub/lvm2/releases/LVM2.%{version}.tgz
-Source0: https://repo.citrite.net/xs-local-contrib/lvm2/LVM2.2.02.130.tgz
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2/archive?at=1.2&format=tar#/lvm2.patches.tar) = f803e45c3da2f1db2eac10b3d6475a8102b481bb
-Patch0: lvm2-rhel7.patch
-Patch1: lvm2-set-default-preferred_names.patch
-Patch2: lvm2-drop-unavailable-libblkid-2_24-BLKID_SUBLKS_BADCSUM-for-signature-detection.patch
-Patch3: lvm2-remove-mpath-device-handling-from-udev-rules.patch
-Patch4: lvm2-lvmlockd-tech-preview-warning.patch
-Patch5: lvm2-2_02_131-standardise-error-paths.patch
-Patch6: lvm2-2_02_131-dmstats-fixups.patch
-Patch7: lvm2-2_02_131-ignore-persistent-cache-if-configuration-changed.patch
-Patch8: lvm2-2_02_131-fix-vg-metadata-comparison-failure-while-scanning-the-vg-for-lvmetad.patch
-Patch9: lvm2-2_02_131-swapping-of-lv-identifiers-handles-more-complex-lvs.patch
-Patch10: lvm2-2_02_131-do-not-check-for-full-thin-pool-when-activating-without-messages.patch
-Patch11: lvm2-2_02_131-disallow-usage-of-stripe-and-stripesize-when-creating-cache-pool.patch
-Patch12: lvm2-2_02_131-fix-vgimportclone-cache_dir-path-name.patch
-Patch13: lvm2-2_02_133-check-for-space-in-thin-pool-before-creating-new-thin.patch
-Patch14: lvm2-2_02_133-enforce-writethrough-mode-for-cleaner-policy.patch
-Patch15: lvm2-2_02_135-fix-resize-of-full-thin-pool-causing-data-loss.patch
-Patch16: lvm2-2_02_142-do-not-check-for-suspended-devices-if-scanning-for-lvmetad-update.patch
-Patch17: lvm2-2_02_140-restore-background-polling-processing-during-auto-activation.patch
-Patch18: lvm2-2_02_155-fix-flushing-for-mirror-target.patch
-Patch19: lvm2-2_02_131-fix-devices-filter-to-be-applied-before-disk-accessing-filters.patch
+
+Source0: https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz
+Source1: https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz
+Patch1: SOURCES/lvm2/lvm2-set-default-preferred_names.patch
+Patch2: SOURCES/lvm2/lvm2-fix-libdm-versioning-for-dm_tree_node_size_changed-symbol.patch
+Patch3: SOURCES/lvm2/lvm2-drop-unavailable-libblkid-2_24-BLKID_SUBLKS_BADCSUM-for-signature-detection.patch
+Patch4: SOURCES/lvm2/lvm2-default-allow-changes-with-duplicate-pvs.patch
+Patch5: SOURCES/lvm2/lvm2-rhel7-fix-StartLimitInterval.patch
+Patch6: SOURCES/lvm2/lvm2-2_02_178-lvmlockd-clear-coverity-complaint.patch
+Patch7: SOURCES/lvm2/lvm2-2_02_178-man-lvmlockd-update-wording.patch
+Patch8: SOURCES/lvm2/lvm2-2_02_178-lvmlockd-add-lockopt-values-for-skipping-selected-lo.patch
+Patch9: SOURCES/lvm2/lvm2-2_02_178-lvmlockd-print-warning-when-skipping-locking.patch
+Patch10: SOURCES/lvm2/lvm2-2_02_178-man-lvmlockd-remove-lv-resizing-comment.patch
+Patch11: SOURCES/lvm2/lvm2-2_02_178-allocation-Avoid-exceeding-array-bounds-in-allocatio.patch
+Patch12: SOURCES/lvm2/lvm2-2_02_178-lvconvert-use-excl-activation-for-conversion.patch
+Patch13: SOURCES/lvm2/lvm2-2_02_178-pvmove-fix-_remove_sibling_pvs_from_trim_list.patch
+Patch14: SOURCES/lvm2/lvm2-2_02_178-pvmove-better-check-for-exclusive-LV.patch
+Patch15: SOURCES/lvm2/lvm2-2_02_178-pvmove-drop-misleading-pvmove-restriction-for-cluste.patch
+Patch16: SOURCES/lvm2/lvm2-2_02_178-dmeventd-add-check-for-result-code.patch
+Patch17: SOURCES/lvm2/lvm2-2_02_178-activation-guard-exclusive-activation.patch
+Patch18: SOURCES/lvm2/lvm2-2_02_178-cleanup-enhance-messages.patch
+Patch19: SOURCES/lvm2/lvm2-2_02_178-cleanup-drop-unused-code.patch
+Patch20: SOURCES/lvm2/lvm2-2_02_178-tests-properly-test-with-clustered-VG.patch
+Patch21: SOURCES/lvm2/lvm2-2_02_178-tests-check-preserved-exclusivness-of-snapshot-merge.patch
+Patch22: SOURCES/lvm2/lvm2-2_02_178-tests-longer-startup-timeout-for-daemons-with-valgri.patch
+Patch23: SOURCES/lvm2/lvm2-2_02_178-tests-check-pvmove-is-merging-segments.patch
+Patch24: SOURCES/lvm2/lvm2-2_02_178-activation-move-check-later.patch
+Patch25: SOURCES/lvm2/lvm2-2_02_178-libdm-accept-mirror-status-with-userspace-word-in-th.patch
+Patch26: SOURCES/lvm2/lvm2-2_02_178-pvmove-reinstantiate-clustered-pvmove.patch
+Patch27: SOURCES/lvm2/lvm2-2_02_178-mirror-Add-deprecation-warning-for-mirrored-log.patch
+Patch28: SOURCES/lvm2/lvm2-2_02_178-locking-exclusive-can-be-either-remote-or-local.patch
+Patch29: SOURCES/lvm2/lvm2-2_02_178-pvmove-enhance-accepted-states-of-active-LVs.patch
+
+Patch30: xs-resolve-ver-mismatch.patch
+Patch31: allow_lv_change_with_metadata_ro
+Patch32: scan_only_the_device_in_LVM_DEVICE_env.diff
+Patch33: udev-rule-to-stop-device-mapper-running-blkid-on.patch
+Patch34: CA-289958-Revert-vgcreate-pvcreate-vgextend-don-t-use-a-device.patch
+
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
+
+# First patch does not apply
+#Patch0: lvm2-rhel7.patch
 
 BuildRequires: gcc
 BuildRequires: libselinux-devel >= %{libselinux_version}, libsepol-devel
@@ -96,7 +132,7 @@ BuildRequires: module-init-tools
 BuildRequires: pkgconfig
 BuildRequires: systemd-devel
 BuildRequires: systemd-units
-%if %{enable_python}
+%if %{enable_python} || %{enable_boom}
 BuildRequires: python2-devel
 BuildRequires: python-setuptools
 %endif
@@ -106,6 +142,7 @@ BuildRequires: device-mapper-persistent-data >= %{persistent_data_version}
 %if %{enable_lockd_sanlock}
 BuildRequires: sanlock-devel >= %{sanlock_version}
 %endif
+
 Requires: %{name}-libs = %{epoch}:%{version}-%{release}
 Requires: bash >= %{bash_version}
 Requires(post): systemd-units >= %{systemd_version}
@@ -115,92 +152,107 @@ Requires: module-init-tools
 %if %{enable_thin} || %{enable_cache}
 Requires: device-mapper-persistent-data >= %{persistent_data_version}
 %endif
-
-Patch2000: allow_lv_change_with_metadata_ro
-Patch2001: scan_only_the_device_in_LVM_DEVICE_env.diff
-Patch2002: fix-aliasing-segv.patch
-Patch2003: udev-rule-to-stop-device-mapper-running-blkid-on.patch
+# BZ https://bugzilla.redhat.com/show_bug.cgi?id=1523288
 
 %description
 LVM2 includes all of the support for handling read/write operations on
 physical volumes (hard disks, RAID-Systems, magneto optical, etc.,
-multiple devices (MD), see mdadd(8) or even loop devices, see
+multiple devices (MD), see mdadm(8) or even loop devices, see
 losetup(8)), creating volume groups (kind of virtual disks) from one
 or more physical volumes and creating one or more logical volumes
 (kind of logical partitions) in volume groups.
 
 %prep
-%autosetup -p1 -N -n LVM2.%{version}
-%patch0 -p1 -b .rhel7
-%patch1 -p1 -b .preferred_names
-%patch2 -p1 -b .blkid_sublks_badcsum
-%patch3 -p1 -b .multipath
-%patch4 -p1 -b .lvmlockd_tech_preview
-%patch5 -p1 -b .error_paths
-%patch6 -p1 -b .dmstats_fixups
-%patch7 -p1 -b .persistent_cache_ignore
-%patch8 -p1 -b .lvmetad_rescan_vg_meta_comparison
-%patch9 -p1 -b .lv_swapping_complex
-%patch10 -p1 -b .thin_no_messages_no_check
-%patch11 -p1 -b .disallow_stripe_for_cache_pool
-%patch12 -p1 -b .vgimportclone_cache_dir
-%patch13 -p1 -b .check_for_thin_pool_space
-%patch14 -p1 -b .writethrough_cleaner_policy
-%patch15 -p1 -b .thin_pool_resize_data_loss
-%patch16 -p1 -b .susp_devs_lvmetad_update
-%patch17 -p1 -b .background_polling_auto_activation
-%patch18 -p1 -b .flushing_mirror
-%patch19 -p1 -b .fix_filter_order
+%if %{enable_boom}
+%setup -q -b 1 -n %{boom_dir}
+%endif
+%autosetup -p1
 
-%patch2000 -p1
-%patch2001 -p1
-%patch2002 -p1
-%patch2003 -p1
-
+#%setup -q -n LVM2.%{version}
+#%patch0 -p1 -b .rhel7
+#%patch1 -p1 -b .preferred_names
+#%patch2 -p1 -b .libdm_symbol_versioning
+#%patch3 -p1 -b .blkid_sublks_badcsum
+#%patch4 -p1 -b .default_allow_dup
+#%patch5 -p1 -b .startlimitinterval
+#%patch6 -p1 -b .6lvmlockd_clear_coverity_complaint
+#%patch7 -p1 -b .7man_lvmlockd_update_wording
+#%patch8 -p1 -b .8lvmlockd_add_lockopt_values_for_skipping_selected_lo
+#%patch9 -p1 -b .9lvmlockd_print_warning_when_skipping_locking
+#%patch10 -p1 -b .10man_lvmlockd_remove_lv_resizing_comment
+#%patch11 -p1 -b .11allocation_Avoid_exceeding_array_bounds_in_allocatio
+#%patch12 -p1 -b .12lvconvert_use_excl_activation_for_conversion
+#%patch13 -p1 -b .13pvmove_fix__remove_sibling_pvs_from_trim_list
+#%patch14 -p1 -b .14pvmove_better_check_for_exclusive_LV
+#%patch15 -p1 -b .15pvmove_drop_misleading_pvmove_restriction_for_cluste
+#%patch16 -p1 -b .16dmeventd_add_check_for_result_code
+#%patch17 -p1 -b .17activation_guard_exclusive_activation
+#%patch18 -p1 -b .18cleanup_enhance_messages
+#%patch19 -p1 -b .19cleanup_drop_unused_code
+#%patch20 -p1 -b .20tests_properly_test_with_clustered_VG
+#%patch21 -p1 -b .21tests_check_preserved_exclusivness_of_snapshot_merge
+#%patch22 -p1 -b .22tests_longer_startup_timeout_for_daemons_with_valgri
+#%patch23 -p1 -b .23tests_check_pvmove_is_merging_segments
+#%patch24 -p1 -b .24activation_move_check_later
+#%patch25 -p1 -b .25libdm_mirror_status_userspace
+#%patch26 -p1 -b .26clustered_pvmove
+#%patch27 -p1 -b .27deprecation_warning_for_mirrored_log
+#%patch28 -p1 -b .28locking_ex_either_remote_or_local
+#%patch29 -p1 -b .29pvmove_enhance_accepted_states_of_active_LVs
 
 %build
-%define _default_pid_dir /run
-%define _default_dm_run_dir /run
-%define _default_run_dir /run/lvm
-%define _default_locking_dir /run/lock/lvm
+%global _default_pid_dir /run
+%global _default_dm_run_dir /run
+%global _default_run_dir /run/lvm
+%global _default_locking_dir /run/lock/lvm
 
-%define _udevdir %{_prefix}/lib/udev/rules.d
-%define _tmpfilesdir %{_prefix}/lib/tmpfiles.d
+%global _udevdir %{_prefix}/lib/udev/rules.d
+%global _tmpfilesdir %{_prefix}/lib/tmpfiles.d
 
-%define configure_udev --with-udevdir=%{_udevdir} --enable-udev_sync
+%global configure_udev --with-udevdir=%{_udevdir} --enable-udev_sync
 
 %if %{enable_cache}
-%define configure_cache --with-cache=internal
+%global configure_cache --with-cache=internal
 %endif
 
 %if %{enable_thin}
-%define configure_thin --with-thin=internal
+%global configure_thin --with-thin=internal
 %endif
 
 %if %{enable_lvmetad}
-%define configure_lvmetad --enable-lvmetad
+%global configure_lvmetad --enable-lvmetad
 %endif
 
 %if %{enable_lockd_dlm}
-%define configure_lockd_dlm --enable-lockd-dlm
+%global configure_lockd_dlm --enable-lvmlockd-dlm
 %endif
 
 %if %{enable_lockd_sanlock}
-%define configure_lockd_sanlock --enable-lockd-sanlock
+%global configure_lockd_sanlock --enable-lvmlockd-sanlock
 %endif
 
 %if %{enable_lvmpolld}
-%define configure_lvmpolld --enable-lvmpolld
+%global configure_lvmpolld --enable-lvmpolld
 %endif
 
 %if %{enable_python}
-%define configure_python --enable-python-bindings
+%global configure_python --enable-python2-bindings
 %endif
 
-%define configure_final --with-default-dm-run-dir=%{_default_dm_run_dir} --with-default-run-dir=%{_default_run_dir} --with-default-pid-dir=%{_default_pid_dir} --with-default-locking-dir=%{_default_locking_dir} --with-usrlibdir=%{_libdir} --enable-lvm1_fallback --enable-fsadm --with-pool=internal --enable-write_install --with-user= --with-group= --with-device-uid=0 --with-device-gid=6 --with-device-mode=0660 --enable-pkgconfig --enable-applib --enable-cmdlib --enable-dmeventd --enable-blkid_wiping %{?configure_python} %{?configure_cluster} %{?configure_cmirror} %{?configure_udev} %{?configure_thin} %{?configure_lvmetad} %{?configure_cache} %{?configure_lvmpolld} %{?configure_lockd_dlm} %{?configure_lockd_sanlock}
+%if %{enable_dmfilemapd}
+%global configure_dmfilemapd --enable-dmfilemapd
+%endif
 
-%configure %{?configure_final}
+%configure --with-default-dm-run-dir=%{_default_dm_run_dir} --with-default-run-dir=%{_default_run_dir} --with-default-pid-dir=%{_default_pid_dir} --with-default-locking-dir=%{_default_locking_dir} --with-usrlibdir=%{_libdir} --enable-lvm1_fallback --enable-fsadm --with-pool=internal --enable-write_install --with-user= --with-group= --with-device-uid=0 --with-device-gid=6 --with-device-mode=0660 --enable-pkgconfig --enable-applib --enable-cmdlib --enable-dmeventd --enable-blkid_wiping %{?configure_python} %{?configure_cluster} %{?configure_cmirror} %{?configure_udev} %{?configure_thin} %{?configure_lvmetad} %{?configure_cache} %{?configure_lvmpolld} %{?configure_lockd_dlm} %{?configure_lockd_sanlock} %{?configure_dmfilemapd}
+
 make %{?_smp_mflags}
+
+%if %{enable_boom}
+(
+cd ../%{boom_dir}
+%py2_build
+)
+%endif
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
@@ -209,6 +261,31 @@ make install_initscripts DESTDIR=$RPM_BUILD_ROOT
 make install_systemd_units DESTDIR=$RPM_BUILD_ROOT
 make install_systemd_generators DESTDIR=$RPM_BUILD_ROOT
 make install_tmpfiles_configuration DESTDIR=$RPM_BUILD_ROOT
+
+%if ! %{enable_lvmetad}
+sed -i -e 's/use_lvmetad = 1/use_lvmetad = 0/' $RPM_BUILD_ROOT/%{_sysconfdir}/lvm/lvm.conf
+%endif
+
+%if %{enable_boom}
+(
+cd ../%{boom_dir}
+%py2_install
+
+# Install Grub2 integration scripts
+install -d -m 700 ${RPM_BUILD_ROOT}/etc/grub.d
+install -d -m 755 ${RPM_BUILD_ROOT}/etc/default
+install -m 755 etc/grub.d/42_boom ${RPM_BUILD_ROOT}/etc/grub.d
+install -m 644 etc/default/boom ${RPM_BUILD_ROOT}/etc/default
+
+# Make configuration directories
+install -d -m 700 ${RPM_BUILD_ROOT}/boot/boom/profiles
+install -d -m 700 ${RPM_BUILD_ROOT}/boot/loader/entries
+install -m 644 examples/profiles/*.profile ${RPM_BUILD_ROOT}/boot/boom/profiles
+
+install -d -m 755 ${RPM_BUILD_ROOT}/%{_mandir}/man8
+install -m 644 man/man8/boom.8 ${RPM_BUILD_ROOT}/%{_mandir}/man8
+)
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -266,7 +343,7 @@ systemctl start lvm2-lvmpolld.socket
 /bin/systemctl try-restart lvm2-monitor.service > /dev/null 2>&1 || :
 
 %files
-%defattr(-,root,root,-)
+%defattr(-,root,root,755)
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING.LIB
 %doc README VERSION WHATS_NEW
@@ -287,7 +364,6 @@ systemctl start lvm2-lvmpolld.socket
 %if %{enable_lvmpolld}
 %{_sbindir}/lvmpolld
 %endif
-%{_sbindir}/vgimportclone
 
 # Other files
 %defattr(444,root,root,-)
@@ -296,7 +372,6 @@ systemctl start lvm2-lvmpolld.socket
 %{_sbindir}/lvcreate
 %{_sbindir}/lvdisplay
 %{_sbindir}/lvextend
-%{_sbindir}/lvmchange
 %{_sbindir}/lvmdiskscan
 %{_sbindir}/lvmsadc
 %{_sbindir}/lvmsar
@@ -325,6 +400,7 @@ systemctl start lvm2-lvmpolld.socket
 %{_sbindir}/vgexport
 %{_sbindir}/vgextend
 %{_sbindir}/vgimport
+%{_sbindir}/vgimportclone
 %{_sbindir}/vgmerge
 %{_sbindir}/vgmknodes
 %{_sbindir}/vgreduce
@@ -335,6 +411,8 @@ systemctl start lvm2-lvmpolld.socket
 %{_sbindir}/vgsplit
 %{_mandir}/man5/lvm.conf.5.gz
 %{_mandir}/man7/lvmcache.7.gz
+%{_mandir}/man7/lvmraid.7.gz
+%{_mandir}/man7/lvmreport.7.gz
 %{_mandir}/man7/lvmthin.7.gz
 %{_mandir}/man7/lvmsystemid.7.gz
 %{_mandir}/man8/fsadm.8.gz
@@ -348,10 +426,10 @@ systemctl start lvm2-lvmpolld.socket
 %{_mandir}/man8/lvm-config.8.gz
 %{_mandir}/man8/lvmconfig.8.gz
 %{_mandir}/man8/lvm-dumpconfig.8.gz
-%{_mandir}/man8/lvmchange.8.gz
 %{_mandir}/man8/lvmconf.8.gz
 %{_mandir}/man8/lvmdiskscan.8.gz
 %{_mandir}/man8/lvmdump.8.gz
+%{_mandir}/man8/lvm-fullreport.8.gz
 %{_mandir}/man8/lvmsadc.8.gz
 %{_mandir}/man8/lvmsar.8.gz
 %{_mandir}/man8/lvreduce.8.gz
@@ -411,11 +489,12 @@ systemctl start lvm2-lvmpolld.socket
 %{_sysconfdir}/lvm/profile/thin-performance.profile
 %{_sysconfdir}/lvm/profile/cache-mq.profile
 %{_sysconfdir}/lvm/profile/cache-smq.profile
+%{_sysconfdir}/lvm/profile/lvmdbusd.profile
 %attr(700, -, -) %dir %{_sysconfdir}/lvm/backup
 %attr(700, -, -) %dir %{_sysconfdir}/lvm/cache
 %attr(700, -, -) %dir %{_sysconfdir}/lvm/archive
-%ghost %dir %{_default_locking_dir}
-%ghost %dir %{_default_run_dir}
+%ghost %attr(700, -, -) %dir %{_default_locking_dir}
+%ghost %attr(700, -, -) %dir %{_default_run_dir}
 %{_tmpfilesdir}/%{name}.conf
 %{_unitdir}/lvm2-monitor.service
 %attr(555, -, -) %{_prefix}/lib/systemd/system-generators/lvm2-activation-generator
@@ -437,6 +516,10 @@ systemctl start lvm2-lvmpolld.socket
 # Library and Development subpackages
 ##############################################################################
 %package devel
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Development libraries and headers
 Group: Development/Libraries
 License: LGPLv2
@@ -459,6 +542,10 @@ the lvm2 libraries.
 %{_libdir}/pkgconfig/lvm2app.pc
 
 %package libs
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Shared libraries for lvm2
 License: LGPLv2
 Group: System Environment/Libraries
@@ -472,7 +559,7 @@ This package contains shared lvm2 libraries for applications.
 %postun libs -p /sbin/ldconfig
 
 %files libs
-%defattr(555,root,root,-)
+%defattr(555,root,root,555)
 %{!?_licensedir:%global license %%doc}
 %license COPYING.LIB
 %{_libdir}/liblvm2app.so.*
@@ -494,6 +581,10 @@ This package contains shared lvm2 libraries for applications.
 %if %{enable_python}
 
 %package python-libs
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Python module to access LVM
 License: LGPLv2
 Group: Development/Libraries
@@ -506,7 +597,7 @@ Python module to allow the creation and use of LVM
 logical volumes, physical volumes, and volume groups.
 
 %files python-libs
-%{python_sitearch}/*
+%{python_sitearch}/lvm*
 
 %endif
 
@@ -515,14 +606,18 @@ logical volumes, physical volumes, and volume groups.
 ##############################################################################
 %if %{enable_lockd_dlm} || %{enable_lockd_sanlock}
 %package lockd
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: LVM locking daemon
 Group: System Environment/Base
 Requires: lvm2 = %{epoch}:%{version}-%{release}
-%if %{enable_lockd_dlm}
-Requires: dlm-lib >= %{dlm_version}
-%endif
 %if %{enable_lockd_sanlock}
 Requires: sanlock-lib >= %{sanlock_version}
+%endif
+%if %{enable_lockd_dlm}
+Requires: dlm-lib >= %{dlm_version}
 %endif
 Requires(post): systemd-units >= %{systemd_version}
 Requires(preun): systemd-units >= %{systemd_version}
@@ -559,6 +654,10 @@ LVM commands use lvmlockd to coordinate access to shared storage.
 %if %{enable_cluster}
 
 %package cluster
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Cluster extensions for userland logical volume management tools
 License: GPLv2
 Group: System Environment/Base
@@ -592,6 +691,10 @@ fi
 # Cluster-standalone subpackage
 ##############################################################################
 %package cluster-standalone
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Additional files to support clustered LVM2 in standalone mode
 License: GPLv2
 Group: System Environment/Base
@@ -629,6 +732,10 @@ involvement (e.g. pacemaker).
 %if %{enable_cmirror}
 
 %package -n cmirror
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Daemon for device-mapper-based clustered mirrors
 Group: System Environment/Base
 Requires: corosync >= %{corosync_version}
@@ -647,6 +754,10 @@ Daemon providing device-mapper-based mirrors in a shared-storage cluster.
 # Cmirror-standalone subpackage
 ##############################################################################
 %package -n cmirror-standalone
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Additional files to support device-mapper-based clustered mirrors in standalone mode
 License: GPLv2
 Group: System Environment/Base
@@ -678,6 +789,10 @@ involvement (e.g. pacemaker).
 # Legacy SysV init subpackage
 ##############################################################################
 %package sysvinit
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: SysV style init script for LVM2.
 Group: System Environment/Base
 Requires: %{name} = %{epoch}:%{version}-%{release}
@@ -710,9 +825,12 @@ is not used as the system init process.
 # Device-mapper subpackages
 ##############################################################################
 %package -n device-mapper
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Device mapper utility
 Version: %{device_mapper_version}
-Release: %{release}
 License: GPLv2
 Group: System Environment/Base
 URL: http://sources.redhat.com/dm
@@ -740,19 +858,27 @@ for the kernel device-mapper.
 %defattr(444,root,root,-)
 %attr(555, -, -) %{_sbindir}/dmsetup
 %attr(555, -, -) %{_sbindir}/blkdeactivate
+# dmstats is a symlink
 %{_sbindir}/dmstats
 %{_mandir}/man8/dmsetup.8.gz
 %{_mandir}/man8/dmstats.8.gz
 %{_mandir}/man8/blkdeactivate.8.gz
+%if %{enable_dmfilemapd}
+%attr(555, -, -) %{_sbindir}/dmfilemapd
+%{_mandir}/man8/dmfilemapd.8.gz
+%endif
 %{_udevdir}/10-dm.rules
 %{_udevdir}/13-dm-disk.rules
 %{_udevdir}/95-dm-notify.rules
 %{_unitdir}/blk-availability.service
 
 %package -n device-mapper-devel
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Development libraries and headers for device-mapper
 Version: %{device_mapper_version}
-Release: %{release}
 License: LGPLv2
 Group: Development/Libraries
 Requires: device-mapper = %{epoch}:%{device_mapper_version}-%{release}
@@ -769,9 +895,12 @@ the device-mapper libraries.
 %{_libdir}/pkgconfig/devmapper.pc
 
 %package -n device-mapper-libs
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Device-mapper shared library
 Version: %{device_mapper_version}
-Release: %{release}
 License: LGPLv2
 Group: System Environment/Libraries
 Requires: device-mapper = %{epoch}:%{device_mapper_version}-%{release}
@@ -784,16 +913,24 @@ This package contains the device-mapper shared library, libdevmapper.
 %postun -n device-mapper-libs -p /sbin/ldconfig
 
 %files -n device-mapper-libs
-%defattr(555,root,root,-)
+%defattr(555,root,root,555)
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING.LIB
 %{_libdir}/libdevmapper.so.*
 
 %package -n device-mapper-event
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Device-mapper event daemon
 Group: System Environment/Base
 Version: %{device_mapper_version}
-Release: %{release}
+# Older lvm2 versions had incorrect dependency on device-mapper-event
+# package where lvm2-libs had "Requires: device-mapper-event >="
+# instead of "Requires: device-mapper-event =". This was fixed in
+# lvm2-2.02.111-1 and later.
+Conflicts: lvm2-libs < 7:2.02.111
 Requires: device-mapper = %{epoch}:%{device_mapper_version}-%{release}
 Requires: device-mapper-event-libs = %{epoch}:%{device_mapper_version}-%{release}
 Requires(post): systemd-units
@@ -811,12 +948,14 @@ of device-mapper devices.
 # http://cgit.freedesktop.org/systemd/systemd/commit/?id=57ab2eabb8f92fad5239c7d4492e9c6e23ee0678
 systemctl enable dm-event.socket
 systemctl start dm-event.socket
-if [ -e %{_default_pid_dir}/dmeventd.pid ]; then
-	%{_sbindir}/dmeventd -R || echo "Failed to restart dmeventd daemon. Please, try manual restart."
-fi
 
 %preun -n device-mapper-event
 %systemd_preun dm-event.service dm-event.socket
+
+%posttrans -n device-mapper-event
+if [ -e %{_default_pid_dir}/dmeventd.pid ]; then
+	%{_sbindir}/dmeventd -R || echo "Failed to restart dmeventd daemon. Please, try manual restart."
+fi
 
 %files -n device-mapper-event
 %defattr(444,root,root,-)
@@ -826,9 +965,12 @@ fi
 %{_unitdir}/dm-event.service
 
 %package -n device-mapper-event-libs
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Device-mapper event daemon shared library
 Version: %{device_mapper_version}
-Release: %{release}
 License: LGPLv2
 Group: System Environment/Libraries
 
@@ -841,15 +983,18 @@ libdevmapper-event.
 %postun -n device-mapper-event-libs -p /sbin/ldconfig
 
 %files -n device-mapper-event-libs
-%defattr(555,root,root,-)
+%defattr(555,root,root,555)
 %{!?_licensedir:%global license %%doc}
 %license COPYING.LIB
 %{_libdir}/libdevmapper-event.so.*
 
 %package -n device-mapper-event-devel
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
 Summary: Development libraries and headers for the device-mapper event daemon
 Version: %{device_mapper_version}
-Release: %{release}
 License: LGPLv2
 Group: Development/Libraries
 Requires: device-mapper-event = %{epoch}:%{device_mapper_version}-%{release}
@@ -865,22 +1010,367 @@ the device-mapper event library.
 %{_includedir}/libdevmapper-event.h
 %{_libdir}/pkgconfig/devmapper-event.pc
 
+%if %{enable_boom}
+##############################################################################
+# boom subpackages
+##############################################################################
+%package -n %{boom_pkgname}
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.177-4.el7&format=tar.gz#/lvm2-2.02.177.centos.tar.gz) = 756aaff839876d6c0a4367829f2db0e4fa073bd4
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.0&format=tar.gz#/lvm2-v2.0.0.pg.tar.gz) = 1b7dd51a46a4a75f867edf69c1cbf7ba7ef4321a
+Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_177&format=tar.gz&prefix=lvm2-2.02.177#/lvm2-2.02.177.tar.gz) = a1f7a483253b11e52ad5460b28cf0c75dba26659
+Provides: gitsha(https://github.com/bmr-cymru/boom/archive/0.8.5/boom-0.8.5.tar.gz) = 24c79fc60710427b0a076f6f6360a8a09d8871f7
+Summary: %{boom_summary}
+Version: %{boom_version}
+License: GPLv2
+Group: System Environment/Base
+BuildArch: noarch
+%{?python_provide:%python_provide python2-boom}
+
+%description -n %{boom_pkgname}
+Boom is a boot manager for Linux systems using boot loaders that support
+the BootLoader Specification for boot entry configuration.
+
+Boom requires a BLS compatible boot loader to function: either the
+systemd-boot project, or Grub2 with the bls patch (Red Hat Grub2 builds
+include this support in both Red Hat Enterprise Linux 7 and Fedora).
+
+This package provides the python2 version of boom.
+
+%files -n %{boom_pkgname}
+%license COPYING
+%{_mandir}/man8/boom.*
+%{python2_sitelib}/boom*
+%{_bindir}/boom
+/etc/grub.d/42_boom
+%config(noreplace) /etc/default/boom
+/boot/*
+%doc ../%{boom_dir}/README.md
+%doc ../%{boom_dir}/examples/
+%doc ../%{boom_dir}/tests/
+%endif
+
 %changelog
-* Tue Jun 14 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.130-5.el7_2.5
-- Fix devices/filter to be applied before disk-accessing filters. (2.02.112)
+* Fri Feb 16 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.177-4
+- pvmove enhance accepted states of active LVs.
+- boom: Remove debug output.
 
-* Thu Jun 09 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.130-5.el7_2.4
-- Fix flushing for mirror target.
+* Wed Feb 14 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.177-3
+- boom: Handle LVs passed in --root-device.
+- boom: Allow /dev/VG/LV notation for --root-lv.
+- boom: Detection of invalid root devices.
+- boom: Support long options without dash separator.
+- Add deprecation warning for mirrored mirror log.
 
-* Tue May 03 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.130-5.el7_2.3
-- Restore background polling processing during auto-activation (2.02.119).
+* Wed Feb 07 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.177-2
+- boom: Better error handling.
+- boom: Warn user when grub2 integration is missing.
+- Reenable clustered pvmove.
 
-* Thu Mar 24 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.130-5.el7_2.2
-- Do not check for suspended devices if scanning for lvmetad update.
+* Tue Jan 23 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.177-1
+- boom: Add missing profiles
+- Avoid non-exclusive activation of exclusive segment types.
+- Fix trimming sibling PVs when doing a pvmove of raid subLVs.
+- Preserve exclusive activation during thin snaphost merge.
+- Check array boundaries in allocation tag processing.
+- When writing metadata, consistently skip mdas marked as failed.
+- Reduce checks for active LVs in vgchange before background polling.
+- Ensure _node_send_message always uses clean status of thin pool.
+- Activation tree of thin pool skips duplicated check of pool status.
 
-* Tue Dec 01 2015 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.130-5.el7_2.1
-- Fix possible data loss caused by lost buffered writes during thin pool
-  resize after reaching its capacity.
+* Wed Dec 06 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.176-5
+- boom: Update man page.
+- boom: Allow users to disable grub2 configuration.
+- boom: Do not add snapshots submenu unless entries exist.
+- boom: Use fdatasync() for profile and entry files.
+- Fix lvmlockd to use pool lock when accessing _tmeta volume.
+- Report expected sanlock_convert errors only when retries fail.
+- Avoid blocking in sanlock_convert on SH to EX lock conversion.
+- Deactivate missing raid LV legs (_rimage_X-missing_Y_Z) on decativation.
+- Allow extending of raid LVs created with --nosync after a failed repair.
+- Merge adjacent segments when pvmove is finished.
+- Ensure very large numbers used as arguments are not casted to lower values. 
+- Enhance reading and validation of options stripes and stripes_size.
+- Fix printing of default stripe size when user is not using stripes.
+- Activation code for pvmove automatically discovers holding LVs for resume.
+- Make a pvmove LV locking holder.
+- Enhance activation code to automatically suspend pvmove participants.
+- Prevent conversion of thin volumes to snapshot origin when lvmlockd is used.
+- Correct the steps to change lock type in lvmlockd man page.
+- Retry lock acquisition on recognized sanlock errors.
+- Fix lock manager error codes in lvmlockd.
+- Check raid reshape flags in vg_validate().
+- Add support for pvmove of cache and snapshot origins.
+- Ehnance pvmove locking.
+- Deactivate activated LVs on error path when pvmove activation fails.
+
+* Wed Nov 15 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.176-4
+- Avoid importing persistent filter in vgscan/pvscan/vgrename.
+- Fix memleak of string buffer when vgcfgbackup runs in secure mode.
+- Do not print error when clvmd cannot find running clvmd.
+- Prevent start of new merge of snapshot if origin is already being merged.
+- Suppress integrity encryption keys in 'table' output unless --showkeys supplied.
+- Fix offered type for raid6_n_6 to raid5 conversion (raid5_n).
+- Deactivate sub LVs when removing unused cache-pool.
+- Do not take backup with suspended devices.
+- Avoid RAID4 activation on incompatible kernels under all circumstances.
+- Reject conversion request to striped/raid0 on 2-legged raid4/5.
+
+* Thu Nov 09 2017 Bryn M. Reeves <bmr@redhat.com> - 7:2.02.176-3
+- Disable boom package build on s390x.
+
+* Fri Nov 03 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.176-2
+- Add "boom" boot manager.
+
+* Fri Nov 03 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.176-1
+- Fix segfault in lvm_pv_remove in liblvm. (2.02.173)
+- Do not allow storing VG metadata with LV without any segment.
+- Fix printed message when thin snapshot was already merged.
+- Remove created spare LV when creation of thin-pool failed.
+- Avoid reading ignored metadata when MDA gets used again.
+- Fix detection of moved PVs in vgsplit. (2.02.175)
+- Ignore --stripes/--stripesize on RAID takeover
+- Disallow creation of snapshot of mirror/raid subLV (was never supported).
+- Keep Install section only in *.socket systemd units.
+- Improve used paths for generated systemd units and init shells.
+
+* Wed Oct 25 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.175-3
+- Fix regression in more advanced vgname extraction in lvconvert (2.02.169).
+- Allow lvcreate to be used for caching of _tdata LV.
+- Avoid internal error when resizing cache type _tdata LV (not yet supported).
+- Show original converted names when lvconverting LV to pool volume.
+- Distinguish between device not found and excluded by filter.
+- Monitor external origin LVs.
+- Remove unused replicator code, including configure --with-replicators.
+
+* Fri Oct 13 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.175-2
+- Allow lvcreate --type mirror to work with 100%%FREE.
+- Improve selection of resource name for complex volume activation lock.
+- Avoid cutting first character of resource name for activation lock.
+- Support for encrypted devices in fsadm.
+- Improve thin pool overprovisioning and repair warning messages.
+- Fix incorrect adjustment of region size on striped RaidLVs.
+
+* Mon Oct 09 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.175-1
+- Update to latest upstream release with various fixes and
+  enhancements documented in WHATS_NEW and WHATS_NEW_DM file.
+
+* Wed Jun 28 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-8
+- Fix reusing of dm_task structure for status reading (used by dmeventd).
+
+* Thu Jun 22 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-7
+- Fix a segfault in RAID.
+
+* Wed Jun 21 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-6
+- Reenable conversion of data and metadata thin-pool volumes to raid.
+- Improve handling of RAID status in lvs.
+- Disable RAID reshape/take-over in a cluster or when snapshot exists.
+
+* Wed Jun 14 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-5
+- Improve lvcreate --cachepool arg validation.
+- Limit maximal size of thin-pool for specific chunk size.
+- Accept truncated files in calls to dm_stats_update_regions_from_fd().
+
+* Wed Jun 07 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-4
+- Converting linear to raid1 using "recover" not "resync".
+- Print a warning about in-use PVs with no VG using them.
+- Disable automatic clearing of PVs that look like in-use orphans.
+
+* Wed Jun 07 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-4
+- Converting linear to raid1 using "recover" not "resync".
+- Print a warning about in-use PVs with no VG using them.
+- Disable automatic clearing of PVs that look like in-use orphans.
+
+* Wed May 31 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-3
+- Cache format2 flag is now using segment name type field compatible with
+  previous versions.
+
+* Wed May 24 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-2
+- Stop using '--yes' mode when fsadm runs without terminal.
+- Extend validation of filesystems resized by fsadm.
+- Enhance lvconvert automatic settings of possible (raid) LV types.
+- Allow lvchange to change properties on a thin pool data sub LV.
+- Fix lvcreate extent percentage calculation for mirrors.
+- Don't reinstate still-missing devices when correcting inconsistent metadata.
+- Properly handle subshell return codes in fsadm.
+- Disallow cachepool creation with policy cleaner and mode writeback.
+
+* Wed May 03 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.171-1
+- Fix dmstats and dmfilemapd permissions.
+- Fix memory warnings by using mempools for command definition processing.
+- Fix running commands from a script file.
+- Adjust pvresize/pvcreate messages and prompt if underlying device size
+  differs.
+- Preserve region size on raid1 image count changes.
+- Handle insufficient space on RAID takeover.
+- Raise mirror/raid default regionsize to 2MiB.
+
+* Thu Apr 13 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.170-2
+- Fix RPM build - missing upstrem and sources.
+
+* Thu Apr 13 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.170-1
+- Introduce global/fsadm_executable to make fsadm path configurable.
+- Look for limited thin pool metadata size when using 16G metadata.
+- Fix missing lvmlockd LV locks in lvchange and lvconvert.
+- Allow valid lvconvert --regionsize change.
+- Handle insufficient PVs on lvconvert takeover.
+- Fix SIGINT blocking to prevent corrupted metadata.
+- Fix systemd unit existence check for lvmconf --services --startstopservices.
+
+* Wed Mar 29 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.169-3
+- Fix dmfilemapd's Makefile.
+- Update dependencies.
+
+* Wed Mar 29 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.169-2
+- Enable dmfilemapd.
+
+* Tue Mar 28 2017 Marian Csontos <mcsontos@redhat.com> - 7:2.02.169-1
+- Update to latest upstream release with various fixes and
+  enhancements documented in WHATS_NEW and WHATS_NEW_DM file.
+
+* Thu Mar 23 2017 Alasdair Kergon <agk@redhat.com> - 7:2.02.166-2
+- Add clustered ppc64le support to build.
+
+* Thu Feb 09 2017 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.166-1.el7_3.3
+- Fix segfault in lvmetad from missing NULL in daemon_reply_simple.
+
+* Wed Nov 16 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.166-1.el7_3.2
+- Prevent raid4 creation/conversion on non-supporting kernels
+- Add direct striped -> raid4 conversion
+- Fix raid4 parity image pair position on conversions from striped/raid0*
+
+* Wed Oct 12 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.166-1.el7_3.1
+- Fix lvconvert to allow repair for cache raid LVs.
+- Fix time when dmeventd is reloaded on package upgrade to start using new code.
+- Fix libdm versioning for dm_tree_node_size_changed symbol.
+
+* Wed Sep 28 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.166-1
+- Disable lvconvert of thin pool to raid while active.
+- Use dm_config_parse_without_dup_node_check() to speedup metadata reading.
+- Fix lvm2-activation-generator to read all LVM2 config sources. (2.02.155)
+- Fix man entry for dmsetup status.
+- Introduce new dm_config_parse_without_dup_node_check().
+
+* Thu Sep 22 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.165-4
+- Revert lvconvert --repair fix for RAID LVs.
+
+* Wed Sep 21 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.165-3
+- Fix lvchange --discard|--zero for active thin-pool.
+- Fix lvconvert --repair regression for RAID LVs.
+- Always specify snapshot cow LV for monitoring not internal LV. (2.02.165)
+- Ensure memory allocated internally for --filemap histogram bounds are freed.
+- Fix missing display of last created dmstats file map.
+- Use --alloc normal for mirror logs even if the mimages were stricter.
+- Fix reported origin lv field for cache volumes. (2.02.133)
+- Fix lock-holder device for thin pool with inactive thin volumes.
+- Enforce 4MiB or 25% metadata free space for thin pool operations.
+- Fix lvmetad metadata validation when rescanning VG.
+
+* Wed Sep 14 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.165-2
+- Fix possible NULL pointer dereference when checking for monitoring.
+- Add lvmreport(7) man page.
+- Report 0% as dirty (copy%) for cache without any used block.
+- Fix lvm2api reporting of cache data and metadata percent.
+- Restore reporting of metadata usage for cache volumes (2.02.155).
+
+* Wed Sep 07 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.165-1
+- Support raid scrubbing on cache origin LV.
+- Add lvmraid(7) man page.
+- Use udev db to check for mpath components before running pvscan for lvmetad.
+- Improve explanation of udev fallback in libdevmapper.h.
+
+* Mon Sep 05 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.164-5
+- Use udev db to check for mpath components before running pvscan for lvmetad.
+- Use devices/allow_changes_with_duplicate_pvs=1 by default.
+
+* Wed Aug 31 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.164-4
+- Use lsblk -s and lsblk -O in lvmdump only if these options are supported.
+- Fix typo in report/columns_as_rows config option name recognition (2.02.99).
+- Do not monitor cache-pool metadata when LV is just being cleared.
+- Add allocation/cache_pool_max_chunks to prevent misuse of cache target.
+- Fix number of stripes shown in lvcreate raid10 message when too many.
+- Give error not segfault in lvconvert --splitmirrors when PV lies outside LV.
+- Avoid PV tags when checking allocation against parallel PVs. 
+
+* Wed Aug 24 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.164-3
+- Disallow segtype and mirror conversions of raid10 volumes.
+- Fix dmeventd unmonitoring when segment type (and dso) changes.
+- Don't allow lvconvert --repair on raid0 devices or attempt to monitor them.
+- No longer adjust incorrect number of raid stripes supplied to lvcreate.
+- Move lcm and gcd to lib/misc.
+- Suppress some unnecessary --stripesize parameter warnings.
+- Fix 'pvmove -n name ...' to prohibit collocation of RAID SubLVs
+
+* Tue Aug 16 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.164-2
+- Suppress some unnecessary --stripesize parameter warnings.
+- Fix selection of PVs when allocating raid0_meta.
+- Specify max stripes for raid LV types: raid0:64; 1:10; 4,5:63; 6:62; 10:32.
+- Avoid double suffix when naming _rmeta LV paired with _rimage LV.
+
+* Wed Aug 10 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.163-1
+- Add profile for lvmdbusd which uses lvm shell json report output.
+- Restrict in-command modification of some parms in lvm shell.
+- Apply LVM_COMMAND_PROFILE early for lvm shell.
+- Refactor reporting so lvm shell log report collects whole of cmd execution.
+- Support LVM_*_FD envvars to redirect output to file descriptors.
+- Limit use of --corelog and --mirrorlog to mirrors in lvconvert.
+- Reject --nosync option for RAID6 LVs in lvcreate.
+- Do not refresh whole cmd context if profile dropped after processing LVM cmd.
+- Support straightforward lvconvert between striped and raid4 LVs. 
+- Support straightforward lvconvert between raid1 and mirror LVs. 
+- Report supported conversions when asked for unsupported raid lvconvert.
+- Add "--rebuild PV" option to lvchange to allow for PV selective rebuilds.
+- Preserve existing mirror region size when using --repair.
+- Forbid stripe parameters with lvconvert --repair.
+- Unify stripe size validation into get_stripe_params to catch missing cases.
+- Further lvconvert validation logic refactoring.
+- Add "lvm fullreport" man page.
+- Add dm_report_destroy_rows/dm_report_group_output_and_pop_all for lvm shell.
+- Adjust group handling and json production for lvm shell.
+
+* Fri Jul 29 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.162-1
+- Extend vg_validate also to check raid configurations thoroughly.
+- Support lvconvert -Zn also when doing full cache pool conversion.
+- Suppress not zeroing warn when converting to thin LV for non-zeroing tpool.
+- Fix automatic updates of PV extension headers to newest version.
+- Improve lvconvert --trackchanges validation to require --splitmirrors 1.
+- Add note about lastlog built-in command to lvm man page.
+- Fix unrecognised segtype flag message.
+- lvconvert not clears cache pool metadata ONLY with -Zn. 
+- Add allocation/raid_stripe_all_devices to reinstate previous behaviour.
+- Create raid stripes across fixed small numbers of PVs instead of all PVs. 
+- Disallow lvconvert --replace with raid0* LVs. 
+- Fix some lvmetad changed VG metadata notifications that sent uncommitted data.
+- Fix json reporting to escape '"' character that may appear in reported string.
+
+* Thu Jul 28 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.161-3
+- Improve lvmlockd message for lock-start.
+- Improve lvmlockd activation locking error message.
+- Improve lvmlockd error message about missing global lock.
+- Allow lvconvert with implied cache pool.
+- Fix vgsplit with external origin LV. (2.02.161)
+
+* Wed Jul 20 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.161-2
+- Fix output redirection while executing blkdeactivate -m disablequeueing.
+
+* Wed Jul 20 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.161-1
+- Update to latest upstream release with various fixes and
+  enhancements documented in WHATS_NEW and WHATS_NEW_DM file.
+
+* Wed Jul 06 2016 Alasdair Kergon <agk@redhat.com> - 7:2.02.160-1
+- Minor fixes from coverity.
+- vgimportclone is now a symlink.
+
+* Wed Jul 06 2016 Alasdair Kergon <agk@redhat.com> - 7:2.02.159-1
+- Update to latest upstream release with various fixes and
+  enhancements documented in WHATS_NEW and WHATS_NEW_DM file.
+
+* Mon Jun 13 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.156-1
+- Update to latest upstream release with various fixes and
+  enhancements documented in WHATS_NEW and WHATS_NEW_DM file.
+
+* Wed May 04 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.152-1
+- Update to latest upstream release with various fixes and
+  enhancements documented in WHATS_NEW and WHATS_NEW_DM file.
 
 * Wed Oct 14 2015 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.130-5
 - Fixup /etc/lvm/archive ownership.
@@ -1467,7 +1957,7 @@ the device-mapper event library.
 - Report blank origin_size field if the LV doesn't have an origin instead of 0.
 - Report partial and in-sync RAID attribute based on kernel status
 - Log output also to syslog when abort_on_internal_error is set.
-- Change lvs heading Copy% to Cpy%Sync and print RAID4/5/6 sync% there too.
+- Change lvs heading Copy% to Cpy%%Sync and print RAID4/5/6 sync% there too.
 - Report error for nonexisting devices in dmeventd communication.
 - Reduce some log_error messages to log_warn where we don't fail.
 - o Configuration:
@@ -1801,7 +2291,7 @@ the device-mapper event library.
 - Update man pages to give them all the same look&feel.
 - Fix lvresize of thin pool for striped devices.
 - For lvresize round upward when specifying number of extents.
-- For lvcreate with %FREE support rounding downward stripe alignment.
+- For lvcreate with %%FREE support rounding downward stripe alignment.
 - Change message severity to log_very_verbose for missing dev info in udev db.
 - Fix lvconvert when specifying removal of a RAID device other than last one.
 - Fix ability to handle failures in mirrored log in dmeventd plugin. (2.02.89)
