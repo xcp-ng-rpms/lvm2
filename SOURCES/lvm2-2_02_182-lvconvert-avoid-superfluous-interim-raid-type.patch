@@ -1,0 +1,45 @@
+From c43515c7ba1d13d54c92d43b76ca0a661c097292 Mon Sep 17 00:00:00 2001
+From: Heinz Mauelshagen <heinzm@redhat.com>
+Date: Fri, 31 Aug 2018 19:03:52 +0200
+Subject: [PATCH] lvconvert: avoid superfluous interim raid type
+
+When converting striped/raid0*/raid6_n_6 <-> raid4,
+avoid superfluous interim raid5_n layout.
+
+Related: rhbz1447809
+(cherry picked from commit 22a13043683a5647e8cc4e3aead911e5269ffd2f)
+(cherry picked from commit 0e03c686191b036a7cd6e570888793ddbdd5f958)
+---
+ lib/metadata/raid_manip.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/lib/metadata/raid_manip.c b/lib/metadata/raid_manip.c
+index d3e3a20..3eee77a 100644
+--- a/lib/metadata/raid_manip.c
++++ b/lib/metadata/raid_manip.c
+@@ -6140,7 +6140,7 @@ static int _set_convenient_raid145610_segtype_to(const struct lv_segment *seg_fr
+ 			seg_flag = SEG_RAID6_N_6;
+ 
+ 		if (segtype_is_linear(*segtype) ||
+-		    (!segtype_is_raid10(*segtype) && !segtype_is_striped(*segtype)))
++		    (!segtype_is_raid4(*segtype) && !segtype_is_raid10(*segtype) && !segtype_is_striped(*segtype)))
+ 			seg_flag = SEG_RAID5_N;
+ 
+ 	/* raid1 -> */
+@@ -6209,10 +6209,9 @@ static int _set_convenient_raid145610_segtype_to(const struct lv_segment *seg_fr
+ 					  lvseg_name(seg_from), display_lvname(seg_from->lv), *new_image_count);
+ 		}
+ 
+-	/* raid4 -> !raid4/raid5* */
+-	} else if (seg_is_raid4(seg_from) &&
+-		   !segtype_is_raid4(*segtype) && !segtype_is_any_raid5(*segtype)) {
+-		seg_flag = SEG_RAID5_N;
++	/* raid4 -> * */
++	} else if (seg_is_raid4(seg_from) && !segtype_is_raid4(*segtype) && !segtype_is_striped(*segtype)) {
++		seg_flag = segtype_is_any_raid6(*segtype) ? SEG_RAID6_N_6 : SEG_RAID5_N;
+ 
+ 	/* raid6 -> striped/raid0/raid5/raid10 */
+ 	} else if (seg_is_any_raid6(seg_from)) {
+-- 
+1.8.3.1
+

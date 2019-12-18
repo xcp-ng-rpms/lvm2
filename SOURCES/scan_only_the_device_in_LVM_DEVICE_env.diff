@@ -1,8 +1,8 @@
 # HG changeset patch
 # Parent 7b8ebdb0f36facb7a22564dd0da5247f2d97d459
-Only scan the Phisical device passed with LVM_DEVICE env var
+Only scan the physical devices passed via LVM_DEVICE env var
 
-Whith this, if LVM_DEVICE env variable is set, only the pysical
+With this, if LVM_DEVICE env variable is set, only the physical
 device present in the dir will be scanned. This will speed up a lot lvm
 commands when there are many LVs.
 
@@ -36,6 +36,32 @@ diff --git a/lib/commands/toolcontext.c b/lib/commands/toolcontext.c
  
  	cmd->initialized.filters = 1;
  	return 1;
+diff --git a/lib/device/dev-cache.c b/lib/device/dev-cache.c
+--- a/lib/device/dev-cache.c
++++ b/lib/device/dev-cache.c
+@@ -1205,6 +1205,11 @@ static int _insert(const char *path, const struct stat *info,
+ 	return 1;
+ }
+ 
++void dev_cache_set_scanned(int scanned)
++{
++	_cache.has_scanned = scanned;
++}
++
+ void dev_cache_scan(void)
+ {
+ 	struct dir_list *dl;
+diff --git a/lib/device/dev-cache.h b/lib/device/dev-cache.h
+--- a/lib/device/dev-cache.h
++++ b/lib/device/dev-cache.h
+@@ -47,6 +47,7 @@ int dev_cache_exit(void);
+ int dev_cache_check_for_open_devices(void);
+ 
+ void dev_cache_scan(void);
++void dev_cache_set_scanned(int);
+ int dev_cache_has_scanned(void);
+ 
+ int dev_cache_add_dir(const char *path);
 diff --git a/lib/filters/filter-persistent.c b/lib/filters/filter-persistent.c
 --- a/lib/filters/filter-persistent.c
 +++ b/lib/filters/filter-persistent.c
@@ -124,7 +150,7 @@ diff --git a/lib/filters/filter-persistent.c b/lib/filters/filter-persistent.c
 +
 +		if (dm_hash_get_num_entries(pf->devices)) {
 +			/* We populated dev_cache ourselves */
-+			dev_cache_scan(0);
++			dev_cache_set_scanned(1);
 +			_from_env = 1;
 +			return 1;
 +		}

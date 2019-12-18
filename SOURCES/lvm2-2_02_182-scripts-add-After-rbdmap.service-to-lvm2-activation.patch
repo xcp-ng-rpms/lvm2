@@ -1,0 +1,73 @@
+From 4484518f67dd41151571e0841ef13134abe39408 Mon Sep 17 00:00:00 2001
+From: Peter Rajnoha <prajnoha@redhat.com>
+Date: Thu, 30 Aug 2018 12:35:58 +0200
+Subject: [PATCH 2/2] scripts: add After=rbdmap.service to
+ {lvm2-activation-net,blk-availability}.service
+
+We need to have Ceph RBD devices mapped first before use in a stack
+where LVM is on top so make sure rbdmap.service is called before
+generated lvm2-activation-net.service.
+
+On shutdown, we need to stop blk-availability first before we stop the
+rbdmap.service.
+
+Resolves: rhbz1623479
+(cherry picked from commit cb17ef221bdefea3625a22c19c6d8f5504441771)
+
+Conflicts:
+	WHATS_NEW
+
+(cherry picked from commit 3374a592502ef099d38491b0c2020a6945d825b1)
+
+Conflicts:
+	WHATS_NEW
+---
+ WHATS_NEW                                           | 2 ++
+ scripts/blk_availability_systemd_red_hat.service.in | 2 +-
+ scripts/lvm2_activation_generator_systemd_red_hat.c | 2 +-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 92e5c04..9da40b6 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,9 +1,11 @@
+ Version 2.02.182 - 
+ ==============================
++  Add After=rbdmap.service to {lvm2-activation-net,blk-availability}.service.
+   Fix lvconvert conversion attempts to linear.
+   Fix lvconvert raid0/raid0_meta -> striped regression.
+   Fix lvconvert --splitmirror for mirror type (2.02.178).
+   Do not pair cache policy and cache metadata format.
++  Fix mirrors honoring read_only_volume_list.
+ 
+ Version 2.02.181 - 
+ =================================
+diff --git a/scripts/blk_availability_systemd_red_hat.service.in b/scripts/blk_availability_systemd_red_hat.service.in
+index 1198baa..9462072 100644
+--- a/scripts/blk_availability_systemd_red_hat.service.in
++++ b/scripts/blk_availability_systemd_red_hat.service.in
+@@ -1,6 +1,6 @@
+ [Unit]
+ Description=Availability of block devices
+-After=lvm2-activation.service lvm2-lvmetad.service iscsi-shutdown.service iscsi.service iscsid.service fcoe.service
++After=lvm2-activation.service lvm2-lvmetad.service iscsi-shutdown.service iscsi.service iscsid.service fcoe.service rbdmap.service
+ DefaultDependencies=no
+ Conflicts=shutdown.target
+ 
+diff --git a/scripts/lvm2_activation_generator_systemd_red_hat.c b/scripts/lvm2_activation_generator_systemd_red_hat.c
+index 0f7f89c..487582f 100644
+--- a/scripts/lvm2_activation_generator_systemd_red_hat.c
++++ b/scripts/lvm2_activation_generator_systemd_red_hat.c
+@@ -128,7 +128,7 @@ static int generate_unit(const char *dir, int unit, int sysinit_needed)
+ 	      "DefaultDependencies=no\n", f);
+ 
+ 	if (unit == UNIT_NET) {
+-		fprintf(f, "After=%s iscsi.service fcoe.service\n"
++		fprintf(f, "After=%s iscsi.service fcoe.service rbdmap.service\n"
+ 			"Before=remote-fs-pre.target shutdown.target\n\n"
+ 			"[Service]\n"
+ 			"ExecStartPre=/usr/bin/udevadm settle\n", unit_names[UNIT_MAIN]);
+-- 
+1.8.3.1
+

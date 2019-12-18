@@ -1,0 +1,51 @@
+ WHATS_NEW                                        | 1 +
+ test/shell/lvconvert-raid1-split-trackchanges.sh | 7 +++++++
+ tools/lvconvert.c                                | 6 ++++++
+ 3 files changed, 14 insertions(+)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 7c74c50..3b15325 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,5 +1,6 @@
+ Version 2.02.181 - 
+ =================================
++  lvconvert: reject conversions on raid1 LVs with split tracked SubLVs
+   lvconvert: reject conversions on raid1 split tracked SubLVs
+ 
+ Version 2.02.180 - 19th July 2018
+diff --git a/test/shell/lvconvert-raid1-split-trackchanges.sh b/test/shell/lvconvert-raid1-split-trackchanges.sh
+index e25a632..718c254 100644
+--- a/test/shell/lvconvert-raid1-split-trackchanges.sh
++++ b/test/shell/lvconvert-raid1-split-trackchanges.sh
+@@ -27,6 +27,13 @@ vgcreate $SHARED -s 512k "$vg" "${DEVICES[@]}"
+ lvcreate -y --ty raid1 -m 2 -n $lv1 -l 1 $vg
+ lvconvert -y --splitmirrors 1 --trackchanges $vg/$lv1
+ 
++not lvconvert -y --ty linear $vg/$lv1
++not lvconvert -y --ty striped -i 3 $vg/$lv1
++not lvconvert -y --ty mirror $vg/$lv1
++not lvconvert -y --ty raid4 $vg/$lv1
++not lvconvert -y --ty raid5 $vg/$lv1
++not lvconvert -y --ty raid6 $vg/$lv1
++not lvconvert -y --ty raid10 $vg/$lv1
+ not lvconvert -y --ty striped -m 1 $vg/${lv1}_rimage_2
+ not lvconvert -y --ty raid1 -m 1 $vg/${lv1}_rimage_2
+ not lvconvert -y --ty mirror -m 1 $vg/${lv1}_rimage_2
+diff --git a/tools/lvconvert.c b/tools/lvconvert.c
+index 079c3cd..731a210 100644
+--- a/tools/lvconvert.c
++++ b/tools/lvconvert.c
+@@ -1170,6 +1170,12 @@ static int _raid_split_image_conversion(struct logical_volume *lv)
+ {
+ 	const char *s;
+ 
++	if (lv_is_raid_with_tracking(lv)) {
++		log_error("Conversion of tracking raid1 LV %s is not supported.",
++			  display_lvname(lv));
++		return 1;
++	}
++
+ 	if (lv_is_raid_image(lv) &&
+ 	    (s = strstr(lv->name, "_rimage_"))) {
+ 		size_t len = s - lv->name;

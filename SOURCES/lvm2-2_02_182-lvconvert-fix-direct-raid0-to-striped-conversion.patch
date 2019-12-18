@@ -1,0 +1,62 @@
+ WHATS_NEW                             |  1 +
+ lib/metadata/raid_manip.c             |  3 +++
+ test/shell/lvconvert-raid0-striped.sh | 25 +++++++++++++++++++++++++
+ 3 files changed, 29 insertions(+)
+ create mode 100644 test/shell/lvconvert-raid0-striped.sh
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 6560357..e3eee56 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,5 +1,6 @@
+ Version 2.02.182 - 
+ ==============================
++  Fix lvconvert raid0/raid0_meta -> striped regression.
+   Fix lvconvert --splitmirror for mirror type (2.02.178).
+   Do not pair cache policy and cache metadata format.
+ 
+diff --git a/lib/metadata/raid_manip.c b/lib/metadata/raid_manip.c
+index 705a7f9..804f78b 100644
+--- a/lib/metadata/raid_manip.c
++++ b/lib/metadata/raid_manip.c
+@@ -6136,6 +6136,9 @@ static int _set_convenient_raid145610_segtype_to(const struct lv_segment *seg_fr
+ 		if (seg_from->area_count == 1)
+ 			seg_flag = SEG_RAID1;
+ 
++		else if (seg_is_any_raid0(seg_from) && segtype_is_striped(*segtype))
++			;
++
+ 		/* If this is any raid5 conversion request -> enforce raid5_n, because we convert from striped */
+ 		else if (((segtype_is_striped(*segtype) && !segtype_is_any_raid0(*segtype)) || segtype_is_any_raid5(*segtype)) &&
+ 			 !segtype_is_raid5_n(*segtype))
+diff --git a/test/shell/lvconvert-raid0-striped.sh b/test/shell/lvconvert-raid0-striped.sh
+new file mode 100644
+index 0000000..4521b34
+--- /dev/null
++++ b/test/shell/lvconvert-raid0-striped.sh
+@@ -0,0 +1,25 @@
++#!/usr/bin/env bash
++
++# Copyright (C) 2018 Red Hat, Inc. All rights reserved.
++#
++# This copyrighted material is made available to anyone wishing to use,
++# modify, copy, or redistribute it subject to the terms and conditions
++# of the GNU General Public License v.2.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software Foundation,
++# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
++
++
++SKIP_WITH_LVMPOLLD=1
++
++. lib/inittest
++
++aux have_raid 1 7 0 || skip
++
++aux prepare_vg 3 16
++
++lvcreate -aey --type raid0 -i 3 -l3 -n $lv $vg
++lvconvert -y --type striped $vg/$lv
++check lv_field $vg/$lv segtype "striped"
++vgremove -ff $vg
