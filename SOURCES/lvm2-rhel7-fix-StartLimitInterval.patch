@@ -18,6 +18,3 @@ index 839bfd1..f0bbd46 100644
  ExecStart=@SBINDIR@/lvm pvscan --cache --activate ay %i
  ExecStop=@SBINDIR@/lvm pvscan --cache %i
 +StartLimitInterval=0
--- 
-1.8.3.1
-

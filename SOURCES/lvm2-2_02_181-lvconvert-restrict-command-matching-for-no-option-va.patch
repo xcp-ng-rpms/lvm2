@@ -1,0 +1,69 @@
+ lib/commands/toolcontext.h |  1 +
+ tools/command-lines.in     |  2 +-
+ tools/lvmcmdline.c         | 14 ++++++++++++++
+ 3 files changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/lib/commands/toolcontext.h b/lib/commands/toolcontext.h
+index bc05736..da5d582 100644
+--- a/lib/commands/toolcontext.h
++++ b/lib/commands/toolcontext.h
+@@ -95,6 +95,7 @@ struct cmd_context {
+ 	char **argv;
+ 	struct arg_values *opt_arg_values;
+ 	struct dm_list arg_value_groups;
++	int opt_count; /* total number of options (beginning with - or --) */
+ 
+ 	/*
+ 	 * Position args remaining after command name
+diff --git a/tools/command-lines.in b/tools/command-lines.in
+index 9d407d0..b7aefa3 100644
+--- a/tools/command-lines.in
++++ b/tools/command-lines.in
+@@ -700,7 +700,7 @@ RULE: all and lv_is_converting
+ # for compat since this was how it used to be done.
+ lvconvert LV_mirror_raid
+ OO: OO_LVCONVERT
+-ID: lvconvert_start_poll
++ID: lvconvert_plain
+ DESC: Poll LV to continue conversion (also see --startpoll)
+ DESC: or waits till conversion/mirror syncing is finished
+ FLAGS: SECONDARY_SYNTAX
+diff --git a/tools/lvmcmdline.c b/tools/lvmcmdline.c
+index 0600b1c..c62a66e 100644
+--- a/tools/lvmcmdline.c
++++ b/tools/lvmcmdline.c
+@@ -119,6 +119,7 @@ static const struct command_function _command_functions[CMD_COUNT] = {
+ 
+ 	/* lvconvert utility to trigger polling on an LV. */
+ 	{ lvconvert_start_poll_CMD, lvconvert_start_poll_cmd },
++	{ lvconvert_plain_CMD, lvconvert_start_poll_cmd },
+ 
+ 	/* lvconvert utilities for creating/maintaining thin and cache objects. */
+ 	{ lvconvert_to_thinpool_CMD,			lvconvert_to_pool_cmd },
+@@ -1579,6 +1580,17 @@ static struct command *_find_command(struct cmd_context *cmd, const char *path,
+ 		if (arg_is_set(cmd, help_ARG) || arg_is_set(cmd, help2_ARG) || arg_is_set(cmd, longhelp_ARG) || arg_is_set(cmd, version_ARG))
+ 			return &commands[i];
+ 
++		/*
++		 * The 'lvconvert LV' cmd def matches any lvconvert cmd which throws off
++		 * nearest-command partial-match suggestions.  Make it a special case so
++		 * that it won't be used as a close match.  If the command has any option
++		 * set (other than -v), don't attempt to match it to 'lvconvert LV'.
++		 */
++		if (commands[i].command_enum == lvconvert_plain_CMD) {
++			if (cmd->opt_count - cmd->opt_arg_values[verbose_ARG].count)
++				continue;
++		}
++
+ 		match_required = 0;	/* required parameters that match */
+ 		match_ro = 0;		/* required opt_args that match */
+ 		match_rp = 0;		/* required pos_args that match */
+@@ -2097,6 +2109,8 @@ static int _process_command_line(struct cmd_context *cmd, int *argc, char ***arg
+ 		if (goval == '?')
+ 			return 0;
+ 
++		cmd->opt_count++;
++
+ 		/*
+ 		 * translate the option value used by getopt into the enum
+ 		 * value (e.g. foo_ARG) from the args array.

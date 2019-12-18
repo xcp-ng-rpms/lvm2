@@ -1,0 +1,145 @@
+ WHATS_NEW               |  1 +
+ lib/activate/activate.c |  3 +--
+ tools/lvchange.c        | 28 +++++++++++++++++++---------
+ tools/vgchange.c        | 15 +++++++++++++--
+ 4 files changed, 34 insertions(+), 13 deletions(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index d8a24b0..a1da4b7 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,5 +1,6 @@
+ Version 2.02.182 - 
+ ==============================
++  Fix change of monitoring in clustered volumes.
+   Fix lvconvert striped/raid0/raid0_meta -> raid6 regression.
+   Add After=rbdmap.service to {lvm2-activation-net,blk-availability}.service.
+   Fix lvconvert conversion attempts to linear.
+diff --git a/lib/activate/activate.c b/lib/activate/activate.c
+index 16704f6..0bc857f 100644
+--- a/lib/activate/activate.c
++++ b/lib/activate/activate.c
+@@ -2061,8 +2061,7 @@ int monitor_dev_for_events(struct cmd_context *cmd, const struct logical_volume
+ 		} else
+ 			continue;
+ 
+-		if (!vg_write_lock_held() && lv_is_mirror(lv)) {
+-			mirr_laopts.exclusive = lv_is_active_exclusive_locally(lv) ? 1 : 0;
++		if (!cmd->is_clvmd && !vg_write_lock_held() && lv_is_mirror(lv)) {
+ 			/*
+ 			 * Commands vgchange and lvchange do use read-only lock when changing
+ 			 * monitoring (--monitor y|n). All other use cases hold 'write-lock'
+diff --git a/tools/lvchange.c b/tools/lvchange.c
+index 6144852..7e5cb5b 100644
+--- a/tools/lvchange.c
++++ b/tools/lvchange.c
+@@ -148,7 +148,8 @@ static int _lvchange_pool_update(struct cmd_context *cmd,
+  */
+ 
+ static int _lvchange_monitoring(struct cmd_context *cmd,
+-				struct logical_volume *lv)
++				struct logical_volume *lv,
++				int was_refreshed)
+ {
+ 	struct lvinfo info;
+ 
+@@ -163,8 +164,15 @@ static int _lvchange_monitoring(struct cmd_context *cmd,
+ 			log_verbose("Monitoring LV %s", display_lvname(lv));
+ 		else
+ 			log_verbose("Unmonitoring LV %s", display_lvname(lv));
+-		if (!monitor_dev_for_events(cmd, lv, 0, dmeventd_monitor_mode()))
+-			return_0;
++
++		if (!was_refreshed) {
++			if (locking_is_clustered()) {
++				/* FIXME: doesn't work when the LV is not lockholder */
++				if (!lv_refresh(cmd, lv))
++					return_0;
++			} else if (!monitor_dev_for_events(cmd, lv, 0, dmeventd_monitor_mode()))
++				return_0;
++		}
+ 	}
+ 
+ 	return 1;
+@@ -176,7 +184,8 @@ static int _lvchange_monitoring(struct cmd_context *cmd,
+  */
+ 
+ static int _lvchange_background_polling(struct cmd_context *cmd,
+-					struct logical_volume *lv)
++					struct logical_volume *lv,
++					int was_refreshed)
+ {
+ 	struct lvinfo info;
+ 
+@@ -187,7 +196,8 @@ static int _lvchange_background_polling(struct cmd_context *cmd,
+ 
+ 	if (background_polling()) {
+ 		log_verbose("Polling LV %s", display_lvname(lv));
+-		lv_spawn_background_polling(cmd, lv);
++		if (!was_refreshed)
++			lv_spawn_background_polling(cmd, lv);
+ 	}
+ 
+ 	return 1;
+@@ -1444,11 +1454,11 @@ static int _lvchange_refresh_single(struct cmd_context *cmd,
+ 	 * checking poll arg.  Pull that out of lv_refresh.
+ 	 */
+ 	if (arg_is_set(cmd, poll_ARG) &&
+-	    !_lvchange_background_polling(cmd, lv))
++	    !_lvchange_background_polling(cmd, lv, 1))
+ 		return_ECMD_FAILED;
+ 
+ 	if (arg_is_set(cmd, monitor_ARG) &&
+-	    !_lvchange_monitoring(cmd, lv))
++	    !_lvchange_monitoring(cmd, lv, 1))
+ 		return_ECMD_FAILED;
+ 
+ 	return ECMD_PROCESSED;
+@@ -1606,11 +1616,11 @@ static int _lvchange_monitor_poll_single(struct cmd_context *cmd,
+ 				         struct processing_handle *handle)
+ {
+ 	if (arg_is_set(cmd, monitor_ARG) &&
+-	    !_lvchange_monitoring(cmd, lv))
++	    !_lvchange_monitoring(cmd, lv, 0))
+ 		return_ECMD_FAILED;
+ 
+ 	if (arg_is_set(cmd, poll_ARG) &&
+-	    !_lvchange_background_polling(cmd, lv))
++	    !_lvchange_background_polling(cmd, lv, 0))
+ 		return_ECMD_FAILED;
+ 
+ 	return ECMD_PROCESSED;
+diff --git a/tools/vgchange.c b/tools/vgchange.c
+index 67be3ec..fa2d585 100644
+--- a/tools/vgchange.c
++++ b/tools/vgchange.c
+@@ -42,7 +42,16 @@ static int _monitor_lvs_in_vg(struct cmd_context *cmd,
+ 		if (lv_is_pvmove(lv))
+ 			continue;
+ 
+-		if (!monitor_dev_for_events(cmd, lv, 0, reg)) {
++		if (locking_is_clustered()) {
++			if (lv != lv_lock_holder(lv))
++				continue;
++			if (!lv_refresh(cmd, lv)) {
++				stack;
++				r = 0;
++				continue;
++			}
++		} else if (!monitor_dev_for_events(cmd, lv, 0, reg)) {
++			stack;
+ 			r = 0;
+ 			continue;
+ 		}
+@@ -157,8 +166,10 @@ static int _vgchange_monitoring(struct cmd_context *cmd, struct volume_group *vg
+ 
+ 	if (lvs_in_vg_activated(vg) &&
+ 	    dmeventd_monitor_mode() != DMEVENTD_MONITOR_IGNORE) {
+-		if (!_monitor_lvs_in_vg(cmd, vg, dmeventd_monitor_mode(), &monitored))
++		if (!_monitor_lvs_in_vg(cmd, vg, dmeventd_monitor_mode(), &monitored)) {
++			stack;
+ 			r = 0;
++		}
+ 		log_print_unless_silent("%d logical volume(s) in volume group "
+ 					"\"%s\" %smonitored",
+ 					monitored, vg->name, (dmeventd_monitor_mode()) ? "" : "un");

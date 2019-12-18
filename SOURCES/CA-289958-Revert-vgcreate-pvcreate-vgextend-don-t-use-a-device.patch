@@ -8,17 +8,11 @@ This reverts commit 86f92714574487cce6a9de785ba2ff93b23a98f7.
 
 There is a scenario in a enviroment with remote storage and multiple
 paths should work.
----
- lib/cache/lvmcache.c | 11 -----------
- lib/cache/lvmcache.h |  2 --
- tools/toollib.c      |  9 ---------
- 3 files changed, 22 deletions(-)
-
 diff --git a/lib/cache/lvmcache.c b/lib/cache/lvmcache.c
-index 5d4732c..3774ad9 100644
+index f55a14c..d135967 100644
 --- a/lib/cache/lvmcache.c
 +++ b/lib/cache/lvmcache.c
-@@ -1519,17 +1519,6 @@ const char *lvmcache_pvid_from_devname(struct cmd_context *cmd,
+@@ -1788,17 +1788,6 @@ const char *lvmcache_pvid_from_devname(struct cmd_context *cmd,
  	return dev->pvid;
  }
  
@@ -37,25 +31,26 @@ index 5d4732c..3774ad9 100644
  {
  	struct lvmcache_vginfo *primary_vginfo, *vginfo2;
 diff --git a/lib/cache/lvmcache.h b/lib/cache/lvmcache.h
-index 847c208..26211f6 100644
+index bf976e9..d515ee7 100644
 --- a/lib/cache/lvmcache.h
 +++ b/lib/cache/lvmcache.h
-@@ -213,6 +213,4 @@ int lvmcache_dev_is_unchosen_duplicate(struct device *dev);
+@@ -207,8 +207,6 @@ int lvmcache_dev_is_unchosen_duplicate(struct device *dev);
  
  void lvmcache_remove_unchosen_duplicate(struct device *dev);
  
 -int lvmcache_pvid_in_unchosen_duplicates(const char *pvid);
 -
- #endif
+ int lvmcache_get_vg_devs(struct cmd_context *cmd,
+ 			 struct lvmcache_vginfo *vginfo,
+ 			 struct dm_list *devs);
 diff --git a/tools/toollib.c b/tools/toollib.c
-index 0509b5e..71e9593 100644
+index e1c86f9..bab9f70 100644
 --- a/tools/toollib.c
 +++ b/tools/toollib.c
-@@ -5035,15 +5035,6 @@ static int _pvcreate_check_single(struct cmd_context *cmd,
- 		return 1;
- 	}
+@@ -5097,15 +5097,6 @@ static int _pvcreate_check_single(struct cmd_context *cmd,
  
--	/*
+ 
+ 	/*
 -	 * Don't allow using a device with duplicates.
 -	 */
 -	if (lvmcache_pvid_in_unchosen_duplicates(pd->dev->pvid)) {
@@ -64,9 +59,7 @@ index 0509b5e..71e9593 100644
 -		return 1;
 -	}
 -
- 	/*
+-	/*
  	 * What kind of device is this: an orphan PV, an uninitialized/unused
  	 * device, a PV used in a VG.
--- 
-2.17.1
-
+ 	 */

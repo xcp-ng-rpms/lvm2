@@ -1,0 +1,26 @@
+ WHATS_NEW    | 3 +++
+ WHATS_NEW_DM | 3 +++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 62a5045..bdd2fa6 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,3 +1,6 @@
++Version 2.02.181 - 
++=================================
++
+ Version 2.02.180 - 19th July 2018
+ =================================
+   Never send any discard ioctl with test mode.
+diff --git a/WHATS_NEW_DM b/WHATS_NEW_DM
+index 93e4b14..e77352a 100644
+--- a/WHATS_NEW_DM
++++ b/WHATS_NEW_DM
+@@ -1,3 +1,6 @@
++Version 1.02.150 - 
++=================================
++
+ Version 1.02.149 - 19th July 2018
+ =================================
+ 

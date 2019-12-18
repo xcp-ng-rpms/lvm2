@@ -1,0 +1,29 @@
+From b6608e0f8426ad334a9eb2f6e1c9a1cfced0536e Mon Sep 17 00:00:00 2001
+From: Marian Csontos <mcsontos@redhat.com>
+Date: Tue, 31 Jul 2018 17:02:47 +0200
+Subject: [PATCH 1/2] Update WHATS_NEW
+
+---
+ WHATS_NEW | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 3b15325..546d3e6 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,7 +1,10 @@
+ Version 2.02.181 - 
+ =================================
+-  lvconvert: reject conversions on raid1 LVs with split tracked SubLVs
+-  lvconvert: reject conversions on raid1 split tracked SubLVs
++  Reject conversions on raid1 LVs with split tracked SubLVs.
++  Reject conversions on raid1 split tracked SubLVs.
++  Fix dmstats list failing when no regions exist.
++  Reject conversions of LVs under snapshot.
++  Limit suggested options on incorrect option for lvconvert subcommand.
+ 
+ Version 2.02.180 - 19th July 2018
+ =================================
+-- 
+1.8.3.1
+
