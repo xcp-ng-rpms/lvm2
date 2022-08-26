@@ -1,4 +1,12 @@
+%global package_speccommit df407d208d4f5acb207d530af3872cc4d933408c
+%global usver 2.02.180
+%global xsver 15
+%global xsrel %{xsver}%{?xscount}%{?xshash}
+%global package_srccommit v2_02_180
 %global device_mapper_version 1.02.149
+%global lvm2_version 2.02.180
+%global lvm2_epoch 7
+
 
 %global enable_cache 1
 %global enable_cluster 1
@@ -47,7 +55,7 @@
 %endif
 
 %ifnarch s390x s390
-    %global enable_boom 1
+    %global enable_boom 0
 %else
     %global enable_boom 0
 %endif
@@ -61,76 +69,69 @@
     %global configure_cluster --with-cluster=internal --with-clvmd=none
 %endif
 
-# Do not reset Release to 1 unless both lvm2 and device-mapper 
+# Do not reset Release to 1 unless both lvm2 and device-mapper
 # versions are increased together.
 
-Summary: Userland logical volume management tools 
+Summary: Userland logical volume management tools
 Name: lvm2
-Epoch: 7
-Version: 2.02.180
-Release: 11.xs+2.0.2
+Version: %{lvm2_version}
+Epoch: %{lvm2_epoch}
+Release: %{?xsrel}%{?dist}
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
 URL: http://sources.redhat.com/lvm2
 %global archive_version %{lua: s=string.gsub(rpm.expand("%{version}"), "%.", "_"); print (s)}
-
-Source0: https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz
-Source1: https://repo.citrite.net/xs-local-contrib/boom/boom-0.9.tar.gz
-Patch0: SOURCES/lvm2/lvm2-rhel7.patch
-Patch1: SOURCES/lvm2/lvm2-set-default-preferred_names.patch
-Patch2: SOURCES/lvm2/lvm2-fix-libdm-versioning-for-dm_tree_node_size_changed-symbol.patch
-Patch3: SOURCES/lvm2/lvm2-drop-unavailable-libblkid-2_24-BLKID_SUBLKS_BADCSUM-for-signature-detection.patch
-Patch4: SOURCES/lvm2/lvm2-default-allow-changes-with-duplicate-pvs.patch
-Patch5: SOURCES/lvm2/lvm2-rhel7-fix-StartLimitInterval.patch
-Patch6: SOURCES/lvm2/lvm2-rhel7-add-lvm1-and-pool-back.patch
-Patch7: SOURCES/lvm2/lvm2-2_02_180-make-generate.patch
-Patch8: SOURCES/lvm2/lvm2-2_02_181-post-release.patch
-Patch9: SOURCES/lvm2/lvm2-2_02_181-lvconvert-restrict-command-matching-for-no-option-va.patch
-Patch10: SOURCES/lvm2/lvm2-2_02_181-lvconvert-improve-text-about-splitmirrors.patch
-Patch11: SOURCES/lvm2/lvm2-2_02_181-lvconvert-reject-conversions-of-LVs-under-snapshot.patch
-Patch12: SOURCES/lvm2/lvm2-2_02_181-dmsetup-fix-error-propagation-in-_display_info_cols.patch
-Patch13: SOURCES/lvm2/lvm2-2_02_181-reject-conversions-trackchanges-SubLVs.patch
-Patch14: SOURCES/lvm2/lvm2-2_02_181-reject-conversions-trackchanges-LVs.patch
-Patch15: SOURCES/lvm2/lvm2-2_02_181-dmeventd-base-vdo-plugin.patch
-Patch16: SOURCES/lvm2/lvm2-2_02_181-dmeventd-rebase-to-stable-branch.patch
-Patch17: SOURCES/lvm2/lvm2-2_02_181-WHATS_NEW.patch
-Patch18: SOURCES/lvm2/lvm2-2_02_181-build-make-generate.patch
-Patch19: SOURCES/lvm2/lvm2-2_02_182-vgcreate-close-exclusive-fd-after-pvcreate.patch
-Patch20: SOURCES/lvm2/lvm2-2_02_182-mirrors-fix-read_only_volume_list.patch
-Patch21: SOURCES/lvm2/lvm2-2_02_182-cache-drop-metadata_format-validation.patch
-Patch22: SOURCES/lvm2/lvm2-2_02_182-mirror-fix-splitmirrors-for-mirror-type.patch
-Patch23: SOURCES/lvm2/lvm2-2_02_182-lvconvert-fix-direct-raid0-to-striped-conversion.patch
-Patch24: SOURCES/lvm2/lvm2-2_02_182-lvconvert-fix-conversion-attempts-to-linear.patch
-Patch25: SOURCES/lvm2/lvm2-2_02_182-dmeventd-lvm2-plugin-uses-envvar-registry.patch
-Patch26: SOURCES/lvm2/lvm2-2_02_182-scripts-add-After-rbdmap.service-to-lvm2-activation.patch
-Patch27: SOURCES/lvm2/lvm2-2_02_182-lvconvert-avoid-superfluous-interim-raid-type.patch
-Patch28: SOURCES/lvm2/lvm2-2_02_182-lvconvert-fix-interim-segtype-regression-on-raid6-co.patch
-Patch29: SOURCES/lvm2/lvm2-2_02_182-fix-clustered-mirror-repair.patch
-Patch30: SOURCES/lvm2/lvm2-2_02_182-metadata-prevent-writing-beyond-metadata-area.patch
-Patch31: SOURCES/lvm2/lvm2-2_02_183-libdm-stats-move-no-regions-warning-after-dm_stats_l.patch
-Patch32: SOURCES/lvm2/lvm2-2_02_183-dmsetup-fix-stats-report-command-output.patch
-Patch33: SOURCES/lvm2/lvm2-2_02_183-io-use-sync-io-if-aio-fails.patch
-Patch34: SOURCES/lvm2/lvm2-2_02_183-bcache-sync-io-fixes.patch
-Patch35: SOURCES/lvm2/lvm2-2_02_183-WHATS_NEW-sync-io.patch
-Patch36: SOURCES/lvm2/lvm2-2_02_182-scan-use-full-md-filter-when-md-1.0-devices-are-pres.patch
-Patch37: SOURCES/lvm2/lvm2-2_02_182-scan-enable-full-md-filter-when-md-1.0-devices-are-p.patch
-Patch38: SOURCES/lvm2/lvm2-2_02_183-scan-md-metadata-version-0.90-is-at-the-end-of-disk.patch
-Patch39: SOURCES/lvm2/lvm2-2_02_183-pvscan-lvmetad-use-full-md-filter-when-md-1.0-device.patch
-Patch40: SOURCES/lvm2/lvm2-2_02_183-pvscan-lvmetad-use-udev-info-to-improve-md-component.patch
-Patch41: SOURCES/lvm2/lvm2-2_02_183-build-make-generate.patch
-Patch42: SOURCES/lvm2/lvm2-2_02_183-WHATS_NEW.patch
-
+Source0: lvm2-2.02.180.tar.gz
+Source1: boom-0.9.tar.gz
+Patch0: lvm2-rhel7.patch
+Patch1: lvm2-set-default-preferred_names.patch
+Patch2: lvm2-fix-libdm-versioning-for-dm_tree_node_size_changed-symbol.patch
+Patch3: lvm2-drop-unavailable-libblkid-2_24-BLKID_SUBLKS_BADCSUM-for-signature-detection.patch
+Patch4: lvm2-default-allow-changes-with-duplicate-pvs.patch
+Patch5: lvm2-rhel7-fix-StartLimitInterval.patch
+Patch6: lvm2-rhel7-add-lvm1-and-pool-back.patch
+Patch7: lvm2-2_02_180-make-generate.patch
+Patch8: lvm2-2_02_181-post-release.patch
+Patch9: lvm2-2_02_181-lvconvert-restrict-command-matching-for-no-option-va.patch
+Patch10: lvm2-2_02_181-lvconvert-improve-text-about-splitmirrors.patch
+Patch11: lvm2-2_02_181-lvconvert-reject-conversions-of-LVs-under-snapshot.patch
+Patch12: lvm2-2_02_181-dmsetup-fix-error-propagation-in-_display_info_cols.patch
+Patch13: lvm2-2_02_181-reject-conversions-trackchanges-SubLVs.patch
+Patch14: lvm2-2_02_181-reject-conversions-trackchanges-LVs.patch
+Patch15: lvm2-2_02_181-dmeventd-base-vdo-plugin.patch
+Patch16: lvm2-2_02_181-dmeventd-rebase-to-stable-branch.patch
+Patch17: lvm2-2_02_181-WHATS_NEW.patch
+Patch18: lvm2-2_02_181-build-make-generate.patch
+Patch19: lvm2-2_02_182-vgcreate-close-exclusive-fd-after-pvcreate.patch
+Patch20: lvm2-2_02_182-mirrors-fix-read_only_volume_list.patch
+Patch21: lvm2-2_02_182-cache-drop-metadata_format-validation.patch
+Patch22: lvm2-2_02_182-mirror-fix-splitmirrors-for-mirror-type.patch
+Patch23: lvm2-2_02_182-lvconvert-fix-direct-raid0-to-striped-conversion.patch
+Patch24: lvm2-2_02_182-lvconvert-fix-conversion-attempts-to-linear.patch
+Patch25: lvm2-2_02_182-dmeventd-lvm2-plugin-uses-envvar-registry.patch
+Patch26: lvm2-2_02_182-scripts-add-After-rbdmap.service-to-lvm2-activation.patch
+Patch27: lvm2-2_02_182-lvconvert-avoid-superfluous-interim-raid-type.patch
+Patch28: lvm2-2_02_182-lvconvert-fix-interim-segtype-regression-on-raid6-co.patch
+Patch29: lvm2-2_02_182-fix-clustered-mirror-repair.patch
+Patch30: lvm2-2_02_182-metadata-prevent-writing-beyond-metadata-area.patch
+Patch31: lvm2-2_02_183-libdm-stats-move-no-regions-warning-after-dm_stats_l.patch
+Patch32: lvm2-2_02_183-dmsetup-fix-stats-report-command-output.patch
+Patch33: lvm2-2_02_183-io-use-sync-io-if-aio-fails.patch
+Patch34: lvm2-2_02_183-bcache-sync-io-fixes.patch
+Patch35: lvm2-2_02_183-WHATS_NEW-sync-io.patch
+Patch36: lvm2-2_02_182-scan-use-full-md-filter-when-md-1.0-devices-are-pres.patch
+Patch37: lvm2-2_02_182-scan-enable-full-md-filter-when-md-1.0-devices-are-p.patch
+Patch38: lvm2-2_02_183-scan-md-metadata-version-0.90-is-at-the-end-of-disk.patch
+Patch39: lvm2-2_02_183-pvscan-lvmetad-use-full-md-filter-when-md-1.0-device.patch
+Patch40: lvm2-2_02_183-pvscan-lvmetad-use-udev-info-to-improve-md-component.patch
+Patch41: lvm2-2_02_183-build-make-generate.patch
+Patch42: lvm2-2_02_183-WHATS_NEW.patch
 Patch43: allow_lv_change_with_metadata_ro
 Patch44: scan_only_the_device_in_LVM_DEVICE_env.diff
 Patch45: udev-rule-to-stop-device-mapper-running-blkid-on.patch
 Patch46: CA-289958-Revert-vgcreate-pvcreate-vgextend-don-t-use-a-device.patch
 Patch47: lvm-udev.patch
-
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
-
 # BZ 1647718:
 # BZ 1656498:
 # BZ 1657640:
@@ -152,7 +153,19 @@ BuildRequires: pkgconfig
 BuildRequires: systemd-devel
 BuildRequires: systemd-units
 %if %{enable_python} || %{enable_boom}
+## Pull in the correct RPM macros for the distributon
+## (Any fedora which is still in support uses python3)
+%if 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?fedora} > 0
+BuildRequires: python3-devel
+BuildRequires: python3-rpm-macros
+%global py_sitearch %{python3_sitearch}
+%global __python %{__python3}
+%else
 BuildRequires: python2-devel
+BuildRequires: python2-rpm-macros
+%global py_sitearch %{python2_sitearch}
+%global __python %{__python2}
+%endif
 BuildRequires: python-setuptools
 %endif
 %if %{enable_thin} || %{enable_cache}
@@ -161,6 +174,7 @@ BuildRequires: device-mapper-persistent-data >= %{persistent_data_version}
 %if %{enable_lockd_sanlock}
 BuildRequires: sanlock-devel >= %{sanlock_version}
 %endif
+%{?_cov_buildrequires}
 
 Requires: %{name}-libs = %{epoch}:%{version}-%{release}
 Requires: bash >= %{bash_version}
@@ -186,6 +200,7 @@ or more physical volumes and creating one or more logical volumes
 %setup -q -b 1 -n %{boom_dir}
 %endif
 %autosetup -p1
+%{?_cov_prepare}
 
 %build
 %global _default_pid_dir /run
@@ -232,7 +247,7 @@ or more physical volumes and creating one or more logical volumes
 
 %configure --with-default-dm-run-dir=%{_default_dm_run_dir} --with-default-run-dir=%{_default_run_dir} --with-default-pid-dir=%{_default_pid_dir} --with-default-locking-dir=%{_default_locking_dir} --with-usrlibdir=%{_libdir} --enable-lvm1_fallback --enable-fsadm --with-pool=internal --enable-write_install --with-user= --with-group= --with-device-uid=0 --with-device-gid=6 --with-device-mode=0660 --enable-pkgconfig --enable-applib --enable-cmdlib --enable-dmeventd --enable-blkid_wiping %{?configure_python} %{?configure_cluster} %{?configure_cmirror} %{?configure_udev} %{?configure_thin} %{?configure_lvmetad} %{?configure_cache} %{?configure_lvmpolld} %{?configure_lockd_dlm} %{?configure_lockd_sanlock} %{?configure_dmfilemapd}
 
-make %{?_smp_mflags}
+%{?_cov_wrap} make %{?_smp_mflags}
 
 %if %{enable_boom}
 (
@@ -291,6 +306,14 @@ install -m 644 man/man8/boom.8 ${RPM_BUILD_ROOT}/%{_mandir}/man8
 )
 %endif
 
+mkdir -p ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-sm-config
+cat > ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-sm-config/README  << END
+This overrides default behaviour of LVM config to meet expectations of Citrix
+Hypervisor Storage Manager.
+END
+
+%{?_cov_install}
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -298,9 +321,9 @@ rm -rf $RPM_BUILD_ROOT
 /sbin/ldconfig
 %systemd_post lvm2-monitor.service
 if [ "$1" = "1" ] ; then
-	# enable and start lvm2-monitor.service on completely new installation only, not on upgrades
-	systemctl enable lvm2-monitor.service
-	systemctl start lvm2-monitor.service
+    # enable and start lvm2-monitor.service on completely new installation only, not on upgrades
+    systemctl enable lvm2-monitor.service
+    systemctl start lvm2-monitor.service
 fi
 %if %{enable_lvmetad}
 %systemd_post lvm2-lvmetad.socket
@@ -518,13 +541,33 @@ systemctl start lvm2-lvmpolld.socket
 %{_unitdir}/lvm2-lvmpolld.service
 %endif
 
+
+##############################################################################
+# Citrix Hypervisor Storage Config Overrides
+##############################################################################
+
+%package sm-config
+Summary: LVM configuration package to apply SM restrictions
+License: LGPLv2
+Group: System Environment/Base
+Requires: lvm2 = %{lvm2_epoch}:%{lvm2_version}-%{xsrel}%{?dist}
+Requires(posttrans): sed
+
+%description sm-config
+Configuration overrides to default behaviour to satisfy the
+expectations of the Citrix hypervisor storage manager
+
+%files sm-config
+%doc %{_docdir}/%{name}-sm-config/README
+
+%posttrans sm-config
+sed -i 's/metadata_read_only =.*/metadata_read_only = 1/' %{_sysconfdir}/lvm/lvm.conf
+
+
 ##############################################################################
 # Library and Development subpackages
 ##############################################################################
 %package devel
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Development libraries and headers
 Group: Development/Libraries
 License: LGPLv2
@@ -547,9 +590,6 @@ the lvm2 libraries.
 %{_libdir}/pkgconfig/lvm2app.pc
 
 %package libs
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Shared libraries for lvm2
 License: LGPLv2
 Group: System Environment/Libraries
@@ -589,9 +629,6 @@ This package contains shared lvm2 libraries for applications.
 %if %{enable_python}
 
 %package python-libs
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Python module to access LVM
 License: LGPLv2
 Group: Development/Libraries
@@ -613,9 +650,6 @@ logical volumes, physical volumes, and volume groups.
 ##############################################################################
 %if %{enable_lockd_dlm} || %{enable_lockd_sanlock}
 %package lockd
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: LVM locking daemon
 Group: System Environment/Base
 Requires: lvm2 = %{epoch}:%{version}-%{release}
@@ -660,9 +694,6 @@ LVM commands use lvmlockd to coordinate access to shared storage.
 %if %{enable_cluster}
 
 %package cluster
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Cluster extensions for userland logical volume management tools
 License: GPLv2
 Group: System Environment/Base
@@ -679,12 +710,12 @@ Extensions to LVM2 to support clusters.
 
 %post cluster
 if [ -e %{_default_pid_dir}/clvmd.pid ]; then
-	/usr/sbin/clvmd -S || echo "Failed to restart clvmd daemon. Please, try manual restart."
+    /usr/sbin/clvmd -S || echo "Failed to restart clvmd daemon. Please, try manual restart."
 fi
 
 %preun cluster
 if [ "$1" = "0" ]; then
-	/sbin/lvmconf --disable-cluster
+    /sbin/lvmconf --disable-cluster
 fi
 
 %files cluster
@@ -696,9 +727,6 @@ fi
 # Cluster-standalone subpackage
 ##############################################################################
 %package cluster-standalone
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Additional files to support clustered LVM2 in standalone mode
 License: GPLv2
 Group: System Environment/Base
@@ -736,9 +764,6 @@ involvement (e.g. pacemaker).
 %if %{enable_cmirror}
 
 %package -n cmirror
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Daemon for device-mapper-based clustered mirrors
 Group: System Environment/Base
 Requires: corosync >= %{corosync_version}
@@ -757,9 +782,6 @@ Daemon providing device-mapper-based mirrors in a shared-storage cluster.
 # Cmirror-standalone subpackage
 ##############################################################################
 %package -n cmirror-standalone
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Additional files to support device-mapper-based clustered mirrors in standalone mode
 License: GPLv2
 Group: System Environment/Base
@@ -791,9 +813,6 @@ involvement (e.g. pacemaker).
 # Legacy SysV init subpackage
 ##############################################################################
 %package sysvinit
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: SysV style init script for LVM2.
 Group: System Environment/Base
 Requires: %{name} = %{epoch}:%{version}-%{release}
@@ -826,9 +845,6 @@ is not used as the system init process.
 # Device-mapper subpackages
 ##############################################################################
 %package -n device-mapper
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Device mapper utility
 Version: %{device_mapper_version}
 License: GPLv2
@@ -873,9 +889,6 @@ for the kernel device-mapper.
 %{_unitdir}/blk-availability.service
 
 %package -n device-mapper-devel
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Development libraries and headers for device-mapper
 Version: %{device_mapper_version}
 License: LGPLv2
@@ -894,9 +907,6 @@ the device-mapper libraries.
 %{_libdir}/pkgconfig/devmapper.pc
 
 %package -n device-mapper-libs
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Device-mapper shared library
 Version: %{device_mapper_version}
 License: LGPLv2
@@ -917,9 +927,6 @@ This package contains the device-mapper shared library, libdevmapper.
 %{_libdir}/libdevmapper.so.*
 
 %package -n device-mapper-event
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Device-mapper event daemon
 Group: System Environment/Base
 Version: %{device_mapper_version}
@@ -951,7 +958,7 @@ systemctl start dm-event.socket
 
 %posttrans -n device-mapper-event
 if [ -e %{_default_pid_dir}/dmeventd.pid ]; then
-	%{_sbindir}/dmeventd -R || echo "Failed to restart dmeventd daemon. Please, try manual restart."
+    %{_sbindir}/dmeventd -R || echo "Failed to restart dmeventd daemon. Please, try manual restart."
 fi
 
 %files -n device-mapper-event
@@ -962,9 +969,6 @@ fi
 %{_unitdir}/dm-event.service
 
 %package -n device-mapper-event-libs
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Device-mapper event daemon shared library
 Version: %{device_mapper_version}
 License: LGPLv2
@@ -985,9 +989,6 @@ libdevmapper-event.
 %{_libdir}/libdevmapper-event.so.*
 
 %package -n device-mapper-event-devel
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: Development libraries and headers for the device-mapper event daemon
 Version: %{device_mapper_version}
 License: LGPLv2
@@ -1010,9 +1011,6 @@ the device-mapper event library.
 # boom subpackages
 ##############################################################################
 %package -n %{boom_pkgname}
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2/archive?at=v2_02_180&format=tar.gz&prefix=lvm2-2.02.180#/lvm2-2.02.180.tar.gz) = bb384f84880a183ee58a18935851eece25cdada4
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XSU/repos/lvm2.centos/archive?at=imports%2Fc7%2Flvm2-2.02.180-10.el7_6.3&format=tar.gz#/lvm2-2.02.180.centos.tar.gz) = 12cbd3f6a8a25e7b2728d576dcb5544d3215f068
-Provides: gitsha(https://code.citrite.net/rest/archive/latest/projects/XS/repos/lvm2.pg/archive?at=v2.0.3&format=tar.gz#/lvm2.pg.tar.gz) = 51bc63587661ac7a9e49d9f15e57f4b509b7e498
 Summary: %{boom_summary}
 Version: %{boom_version}
 Release: %{boom_release}%{?dist}.2%{?scratch}
@@ -1045,7 +1043,19 @@ This package provides the python2 version of boom.
 %doc ../%{boom_dir}/tests/
 %endif
 
+%{?_cov_results_package}
+
 %changelog
+* Fri Apr 29 2022 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-14
+- CA-366620 - create sub package to metadata_read_only for Citrix Hypervisor
+
+* Tue Oct 12 2021 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-13
+- Define static analysis
+
+* Wed Nov 18 2020 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-12
+- Add Coverity macros
+- Disable building boom
+
 * Wed May  1 2019 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-10.xs+2.0.2
 - Backport commit from upstream to fully ignore udev devices
 
@@ -1162,7 +1172,7 @@ This package provides the python2 version of boom.
 - Deactivate missing raid LV legs (_rimage_X-missing_Y_Z) on decativation.
 - Allow extending of raid LVs created with --nosync after a failed repair.
 - Merge adjacent segments when pvmove is finished.
-- Ensure very large numbers used as arguments are not casted to lower values. 
+- Ensure very large numbers used as arguments are not casted to lower values.
 - Enhance reading and validation of options stripes and stripes_size.
 - Fix printing of default stripe size when user is not using stripes.
 - Activation code for pvmove automatically discovers holding LVs for resume.
@@ -1363,7 +1373,7 @@ This package provides the python2 version of boom.
 - Add allocation/cache_pool_max_chunks to prevent misuse of cache target.
 - Fix number of stripes shown in lvcreate raid10 message when too many.
 - Give error not segfault in lvconvert --splitmirrors when PV lies outside LV.
-- Avoid PV tags when checking allocation against parallel PVs. 
+- Avoid PV tags when checking allocation against parallel PVs.
 
 * Wed Aug 24 2016 Peter Rajnoha <prajnoha@redhat.com> - 7:2.02.164-3
 - Disallow segtype and mirror conversions of raid10 volumes.
@@ -1389,8 +1399,8 @@ This package provides the python2 version of boom.
 - Limit use of --corelog and --mirrorlog to mirrors in lvconvert.
 - Reject --nosync option for RAID6 LVs in lvcreate.
 - Do not refresh whole cmd context if profile dropped after processing LVM cmd.
-- Support straightforward lvconvert between striped and raid4 LVs. 
-- Support straightforward lvconvert between raid1 and mirror LVs. 
+- Support straightforward lvconvert between striped and raid4 LVs.
+- Support straightforward lvconvert between raid1 and mirror LVs.
 - Report supported conversions when asked for unsupported raid lvconvert.
 - Add "--rebuild PV" option to lvchange to allow for PV selective rebuilds.
 - Preserve existing mirror region size when using --repair.
@@ -1409,10 +1419,10 @@ This package provides the python2 version of boom.
 - Improve lvconvert --trackchanges validation to require --splitmirrors 1.
 - Add note about lastlog built-in command to lvm man page.
 - Fix unrecognised segtype flag message.
-- lvconvert not clears cache pool metadata ONLY with -Zn. 
+- lvconvert not clears cache pool metadata ONLY with -Zn.
 - Add allocation/raid_stripe_all_devices to reinstate previous behaviour.
-- Create raid stripes across fixed small numbers of PVs instead of all PVs. 
-- Disallow lvconvert --replace with raid0* LVs. 
+- Create raid stripes across fixed small numbers of PVs instead of all PVs.
+- Disallow lvconvert --replace with raid0* LVs.
 - Fix some lvmetad changed VG metadata notifications that sent uncommitted data.
 - Fix json reporting to escape '"' character that may appear in reported string.
 
@@ -2460,7 +2470,7 @@ This package provides the python2 version of boom.
 - Add "watch" rule to 13-dm-disk.rules.
 - Detect failing fifo and skip 20s retry communication period.
 - Replace any '\' char with '\\' in dm table specification on input.
-- New 'mangle' options in dmsetup/libdevmapper for transparent reversible 
+- New 'mangle' options in dmsetup/libdevmapper for transparent reversible
   encoding of characters that udev forbids in device names.
 - Add --manglename option to dmsetup to select the name mangling mode.
 - Add mangle command to dmsetup to provide renaming to correct mangled form.
@@ -2487,7 +2497,7 @@ This package provides the python2 version of boom.
 
 * Thu Jan 26 2012 Alasdair Kergon <agk@redhat.com> - 2.02.89-2
 - New upstream release with experimental support for thinly-provisioned devices.
-- The changelog for this release is quite long and contained in 
+- The changelog for this release is quite long and contained in
   WHATS_NEW and WHATS_NEW_DM in the documentation directory.
 
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.02.88-3
@@ -2796,7 +2806,7 @@ This package provides the python2 version of boom.
 - Require logical volume(s) to be explicitly named for lvconvert --merge.
 - Avoid changing aligned pe_start as a side-effect of a log message.
 - Use built-in rule for device aliases: block/ < dm- < disk/ < mapper/ < other.
-- Handle failure of all mirrored log devices and all but one mirror leg. 
+- Handle failure of all mirrored log devices and all but one mirror leg.
 - Disallow 'mirrored' log type for cluster mirrors.
 - Fix configure to supply DEFAULT_RUN_DIR to Makefiles.
 - Fix allocation of wrong number of mirror logs with 'remove' fault policy.
@@ -4103,7 +4113,7 @@ This package provides the python2 version of boom.
 * Tue Apr 20 2004 Bill Nottingham <notting@redhat.com> - 2.00.15-1.1
 - handle disabled SELinux correctly, so that LVMs can be detected in a
   non-SELinux context
-  
+
 * Mon Apr 19 2004 Alasdair Kergon <agk@redhat.com> - 2.00.15-1
 - Fix non-root build with current version of 'install'.
 
@@ -4141,7 +4151,7 @@ This package provides the python2 version of boom.
 * Wed Mar 17 2004 Jeremy Katz <katzj@redhat.com> 2.00.08-5
 - Fix sysfs patch to find sysfs
 - Take patch from dwalsh and tweak a little for setting SELinux contexts on
-  device node creation and also do it on the symlink creation.  
+  device node creation and also do it on the symlink creation.
   Part of this should probably be pushed down to device-mapper instead
 
 * Thu Feb 19 2004 Stephen C. Tweedie <sct@redhat.com> 2.00.08-4
@@ -4154,7 +4164,7 @@ This package provides the python2 version of boom.
 * Fri Dec  5 2003 Jeremy Katz <katzj@redhat.com> 2.00.08-2
 - add static lvm binary
 
-* Tue Dec  2 2003 Jeremy Katz <katzj@redhat.com> 
+* Tue Dec  2 2003 Jeremy Katz <katzj@redhat.com>
 - Initial build.
 
 
