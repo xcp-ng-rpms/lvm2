@@ -9,10 +9,13 @@
 
 
 %global enable_cache 1
-%global enable_cluster 1
+# XCP-ng: cut the corosync build dependency. We don't use the produced subpackage.
+%global enable_cluster 0
 %global enable_cmirror 1
 %global enable_lvmetad 0
-%global enable_lvmlockd 1
+# XCP-ng: cut the dlm build dependency.
+# We don't use the produced subpackage, and don't need dlm for anything else currently.
+%global enable_lvmlockd 0
 %global enable_lvmpolld 1
 %global enable_python 1
 %global enable_thin 1
@@ -76,7 +79,7 @@ Summary: Userland logical volume management tools
 Name: lvm2
 Version: %{lvm2_version}
 Epoch: %{lvm2_epoch}
-Release: %{?xsrel}%{?dist}
+Release: %{?xsrel}.1%{?dist}
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
@@ -1047,6 +1050,10 @@ This package provides the python2 version of boom.
 %{?_cov_results_package}
 
 %changelog
+* Thu Mar 16 2023 Samuel Verschelde <stormi-xcp@ylix.fr> - 7:2.02.180-15.1
+- Cut the corosynclib-devel build dependency by disabling the cluster subpackage
+- Cut the dlm-devel build dependency by disabling the lockd subpackage
+
 * Fri Apr 29 2022 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-14
 - CA-366620 - create sub package to metadata_read_only for Citrix Hypervisor
 
