@@ -79,7 +79,7 @@ Summary: Userland logical volume management tools
 Name: lvm2
 Version: %{lvm2_version}
 Epoch: %{lvm2_epoch}
-Release: %{?xsrel}.1%{?dist}
+Release: %{?xsrel}.2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
@@ -310,12 +310,6 @@ install -m 644 man/man8/boom.8 ${RPM_BUILD_ROOT}/%{_mandir}/man8
 )
 %endif
 
-mkdir -p ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-sm-config
-cat > ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-sm-config/README  << END
-This overrides default behaviour of LVM config to meet expectations of
-XCP-ng's Storage Manager.
-END
-
 %{?_cov_install}
 
 %clean
@@ -544,28 +538,6 @@ systemctl start lvm2-lvmpolld.socket
 %{_unitdir}/lvm2-lvmpolld.socket
 %{_unitdir}/lvm2-lvmpolld.service
 %endif
-
-
-##############################################################################
-# XCP-ng Storage Config Overrides
-##############################################################################
-
-%package sm-config
-Summary: LVM configuration package to apply SM restrictions
-License: LGPLv2
-Group: System Environment/Base
-Requires: lvm2 = %{lvm2_epoch}:%{lvm2_version}-%{xsrel}%{?dist}
-Requires(posttrans): sed
-
-%description sm-config
-Configuration overrides to default behaviour to satisfy the
-expectations of XCP-ng's storage manager
-
-%files sm-config
-%doc %{_docdir}/%{name}-sm-config/README
-
-%posttrans sm-config
-sed -i 's/metadata_read_only =.*/metadata_read_only = 1/' %{_sysconfdir}/lvm/lvm.conf
 
 
 ##############################################################################
@@ -1050,6 +1022,10 @@ This package provides the python2 version of boom.
 %{?_cov_results_package}
 
 %changelog
+* Tue Apr 18 2023 Samuel Verschelde <stormi-xcp@ylix.fr> - 7:2.02.180-15.2
+- Drop the obsolete lvm2-sm-config subpackage
+- It was unused, and it didn't require the right Release
+
 * Thu Mar 16 2023 Samuel Verschelde <stormi-xcp@ylix.fr> - 7:2.02.180-15.1
 - Cut the corosynclib-devel build dependency by disabling the cluster subpackage
 - Cut the dlm-devel build dependency by disabling the lockd subpackage
