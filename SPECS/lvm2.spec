@@ -1,6 +1,6 @@
-%global package_speccommit df407d208d4f5acb207d530af3872cc4d933408c
+%global package_speccommit 52174ceae0e9215eb5f057a8dd89258b0360c1b0
 %global usver 2.02.180
-%global xsver 15
+%global xsver 16
 %global xsrel %{xsver}%{?xscount}%{?xshash}
 %global package_srccommit v2_02_180
 %global device_mapper_version 1.02.149
@@ -132,6 +132,7 @@ Patch44: scan_only_the_device_in_LVM_DEVICE_env.diff
 Patch45: udev-rule-to-stop-device-mapper-running-blkid-on.patch
 Patch46: CA-289958-Revert-vgcreate-pvcreate-vgextend-don-t-use-a-device.patch
 Patch47: lvm-udev.patch
+Patch48: CA-384527-skip-nbd-device-scan-in-lvm-utilities.patch
 # BZ 1647718:
 # BZ 1656498:
 # BZ 1657640:
@@ -306,12 +307,6 @@ install -m 644 man/man8/boom.8 ${RPM_BUILD_ROOT}/%{_mandir}/man8
 )
 %endif
 
-mkdir -p ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-sm-config
-cat > ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-sm-config/README  << END
-This overrides default behaviour of LVM config to meet expectations of Citrix
-Hypervisor Storage Manager.
-END
-
 %{?_cov_install}
 
 %clean
@@ -323,7 +318,7 @@ rm -rf $RPM_BUILD_ROOT
 if [ "$1" = "1" ] ; then
     # enable and start lvm2-monitor.service on completely new installation only, not on upgrades
     systemctl enable lvm2-monitor.service
-    systemctl start lvm2-monitor.service
+    systemctl start lvm2-monitor.service > /dev/null 2>&1 || :
 fi
 %if %{enable_lvmetad}
 %systemd_post lvm2-lvmetad.socket
@@ -331,7 +326,7 @@ fi
 # replace direct systemctl calls with systemd rpm macro once this is provided in the macro:
 # http://cgit.freedesktop.org/systemd/systemd/commit/?id=57ab2eabb8f92fad5239c7d4492e9c6e23ee0678
 systemctl enable lvm2-lvmetad.socket
-systemctl start lvm2-lvmetad.socket
+systemctl start lvm2-lvmetad.socket > /dev/null 2>&1 || :
 %endif
 
 %if %{enable_lvmpolld}
@@ -340,7 +335,7 @@ systemctl start lvm2-lvmetad.socket
 # replace direct systemctl calls with systemd rpm macro once this is provided in the macro:
 # http://cgit.freedesktop.org/systemd/systemd/commit/?id=57ab2eabb8f92fad5239c7d4492e9c6e23ee0678
 systemctl enable lvm2-lvmpolld.socket
-systemctl start lvm2-lvmpolld.socket
+systemctl start lvm2-lvmpolld.socket > /dev/null 2>&1 || :
 %endif
 
 %preun
@@ -540,28 +535,6 @@ systemctl start lvm2-lvmpolld.socket
 %{_unitdir}/lvm2-lvmpolld.socket
 %{_unitdir}/lvm2-lvmpolld.service
 %endif
-
-
-##############################################################################
-# Citrix Hypervisor Storage Config Overrides
-##############################################################################
-
-%package sm-config
-Summary: LVM configuration package to apply SM restrictions
-License: LGPLv2
-Group: System Environment/Base
-Requires: lvm2 = %{lvm2_epoch}:%{lvm2_version}-%{xsrel}%{?dist}
-Requires(posttrans): sed
-
-%description sm-config
-Configuration overrides to default behaviour to satisfy the
-expectations of the Citrix hypervisor storage manager
-
-%files sm-config
-%doc %{_docdir}/%{name}-sm-config/README
-
-%posttrans sm-config
-sed -i 's/metadata_read_only =.*/metadata_read_only = 1/' %{_sysconfdir}/lvm/lvm.conf
 
 
 ##############################################################################
@@ -951,7 +924,7 @@ of device-mapper devices.
 # replace direct systemctl calls with systemd rpm macro once this is provided in the macro:
 # http://cgit.freedesktop.org/systemd/systemd/commit/?id=57ab2eabb8f92fad5239c7d4492e9c6e23ee0678
 systemctl enable dm-event.socket
-systemctl start dm-event.socket
+systemctl start dm-event.socket > /dev/null 2>&1 || :
 
 %preun -n device-mapper-event
 %systemd_preun dm-event.service dm-event.socket
@@ -1046,6 +1019,11 @@ This package provides the python2 version of boom.
 %{?_cov_results_package}
 
 %changelog
+* Fri Mar 22 2024 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-16
+- CA-368585 Drop sm-config sub-package
+- CA-380627 Suppress errors when attempting to start services
+- CA-384527 add lvm filter to skip nbd device scan
+
 * Fri Apr 29 2022 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-14
 - CA-366620 - create sub package to metadata_read_only for Citrix Hypervisor
 
