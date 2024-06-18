@@ -1,0 +1,31 @@
+From 589a0841acd4df662016115bed4dde15376549d8 Mon Sep 17 00:00:00 2001
+From: Chunjie Zhu <chunjie.zhu@cloud.com>
+Date: Thu, 21 Mar 2024 03:55:08 +0000
+Subject: [PATCH] CA-384527: skip nbd device scan in lvm utilities
+
+In same cases, we call tap-ctl to pause nbd device, then nbd device
+is unresponsive to any application which issues raw read operation
+on the nbd device, the application just gets stuck, does not consume
+any cpu timeslice and never terminates.
+
+Signed-off-by: Chunjie Zhu <chunjie.zhu@cloud.com>
+---
+ conf/example.conf.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/conf/example.conf.in b/conf/example.conf.in
+index b37e0b25d..94c87293a 100644
+--- a/conf/example.conf.in
++++ b/conf/example.conf.in
+@@ -140,6 +140,8 @@ devices {
+ 	# This configuration option has an automatic default value.
+ 	# filter = [ "a|.*/|" ]
+ 
++	filter = [ "r|/dev/nbd|" ]
++
+ 	# Configuration option devices/global_filter.
+ 	# Limit the block devices that are used by LVM system components.
+ 	# Because devices/filter may be overridden from the command line, it is
+-- 
+2.34.1
+
