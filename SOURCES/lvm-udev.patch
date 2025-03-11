@@ -11,15 +11,11 @@ obtain_device_list_from_udev config setting to also control
 whether these "is component" functions are used, which gives
 us a way to avoid using libudev entirely when it's causing
 problems.
----
- lib/device/dev-type.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
 diff --git a/lib/device/dev-type.c b/lib/device/dev-type.c
-index 9278b51..e9106a9 100644
+index 331fe07265db..60b0d78e7627 100644
 --- a/lib/device/dev-type.c
 +++ b/lib/device/dev-type.c
-@@ -1138,6 +1138,9 @@ int udev_dev_is_mpath_component(struct device *dev)
+@@ -1062,6 +1062,9 @@ int udev_dev_is_mpath_component(struct device *dev)
  	const char *value;
  	int ret = 0;
  
@@ -29,7 +25,7 @@ index 9278b51..e9106a9 100644
  	if (!(udev_device = _udev_get_dev(dev)))
  		return 0;
  
-@@ -1167,6 +1170,9 @@ int udev_dev_is_md_component(struct device *dev)
+@@ -1091,6 +1094,9 @@ int udev_dev_is_md_component(struct device *dev)
  	const char *value;
  	int ret = 0;
  
@@ -39,6 +35,3 @@ index 9278b51..e9106a9 100644
  	if (!(udev_device = _udev_get_dev(dev)))
  		return 0;
  
--- 
-2.9.3
-

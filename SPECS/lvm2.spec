@@ -1,23 +1,21 @@
-%global package_speccommit 52174ceae0e9215eb5f057a8dd89258b0360c1b0
+%global package_speccommit c9ad06cfba92fc043c628aa0875523ab1067850d
 %global usver 2.02.180
-%global xsver 16
+%global xsver 18
 %global xsrel %{xsver}%{?xscount}%{?xshash}
 %global package_srccommit v2_02_180
 %global device_mapper_version 1.02.149
 %global lvm2_version 2.02.180
 %global lvm2_epoch 7
 
-
 %global enable_cache 1
-# XCP-ng: cut the corosync build dependency. We don't use the produced subpackage.
 %global enable_cluster 0
-%global enable_cmirror 1
+%global enable_cmirror 0
 %global enable_lvmetad 0
 # XCP-ng: cut the dlm build dependency.
 # We don't use the produced subpackage, and don't need dlm for anything else currently.
 %global enable_lvmlockd 0
 %global enable_lvmpolld 1
-%global enable_python 1
+%global enable_python 0
 %global enable_thin 1
 %global enable_dmfilemapd 1
 %global enable_aio 0
@@ -1023,6 +1021,18 @@ This package provides the python2 version of boom.
 %{?_cov_results_package}
 
 %changelog
+* Tue Mar 04 2025 Samuel Verschelde <stormi-xcp@ylix.fr> - 7:2.02.180-18.1
+- Rebase on 7:2.02.180-18
+- *** Upstream changelog ***
+  * Thu Jul 11 2024 Lin Liu <Lin.Liu01@cloud.com> - 7:2.02.180-18
+  - CP-46075: Disable cluster and cmirror as not used and introduce extra deps
+  * Thu Jul 11 2024 Lin Liu <Lin.Liu01@cloud.com> - 7:2.02.180-17
+  - CP-46075: Compatible with XS9
+  * Fri Mar 22 2024 Mark Syms <mark.syms@citrix.com> - 7:2.02.180-16
+  - CA-368585 Drop sm-config sub-package
+  - CA-380627 Suppress errors when attempting to start services
+  - CA-384527 add lvm filter to skip nbd device scan
+
 * Tue Jun 18 2024 Samuel Verschelde <stormi-xcp@ylix.fr> - 7:2.02.180-16.1
 - Rebase on 7:2.02.180-16
 - *** Ustream changelog ***

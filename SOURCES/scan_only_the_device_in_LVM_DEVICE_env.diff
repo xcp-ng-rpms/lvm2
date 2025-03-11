@@ -16,9 +16,10 @@ Signed-off-by: Stefano Panella <stefano.panella@citrix.com>
 Reviewed-by: Germano Percossi <germano.percossi@citrix.com>
 
 diff --git a/lib/commands/toolcontext.c b/lib/commands/toolcontext.c
+index 4d3f74402404..46bdb0d1c666 100644
 --- a/lib/commands/toolcontext.c
 +++ b/lib/commands/toolcontext.c
-@@ -1015,7 +1015,7 @@ static int _init_filters(struct cmd_cont
+@@ -1284,7 +1284,7 @@ int init_filters(struct cmd_context *cmd, unsigned load_persistent_cache)
  
  	if (!*cmd->system_dir)
  		cmd->dump_filter = 0;
@@ -27,7 +28,7 @@ diff --git a/lib/commands/toolcontext.c b/lib/commands/toolcontext.c
  	/*
  	 * Only load persistent filter device cache on startup if it is newer
  	 * than the config file and this is not a long-lived process. Also avoid
-@@ -1253,6 +1253,8 @@
+@@ -1300,6 +1300,8 @@ int init_filters(struct cmd_context *cmd, unsigned load_persistent_cache)
  			log_verbose("Failed to load existing device cache from %s",
  				    dev_cache);
  	}
@@ -37,6 +38,7 @@ diff --git a/lib/commands/toolcontext.c b/lib/commands/toolcontext.c
  	cmd->initialized.filters = 1;
  	return 1;
 diff --git a/lib/device/dev-cache.c b/lib/device/dev-cache.c
+index c866ff903319..5897343f2c76 100644
 --- a/lib/device/dev-cache.c
 +++ b/lib/device/dev-cache.c
 @@ -1205,6 +1205,11 @@ static int _insert(const char *path, const struct stat *info,
@@ -52,6 +54,7 @@ diff --git a/lib/device/dev-cache.c b/lib/device/dev-cache.c
  {
  	struct dir_list *dl;
 diff --git a/lib/device/dev-cache.h b/lib/device/dev-cache.h
+index df6ba0e73993..961fbe291154 100644
 --- a/lib/device/dev-cache.h
 +++ b/lib/device/dev-cache.h
 @@ -47,6 +47,7 @@ int dev_cache_exit(void);
@@ -63,6 +66,7 @@ diff --git a/lib/device/dev-cache.h b/lib/device/dev-cache.h
  
  int dev_cache_add_dir(const char *path);
 diff --git a/lib/filters/filter-persistent.c b/lib/filters/filter-persistent.c
+index 1d24af86426d..099905f91e42 100644
 --- a/lib/filters/filter-persistent.c
 +++ b/lib/filters/filter-persistent.c
 @@ -17,6 +17,7 @@
@@ -73,16 +77,16 @@ diff --git a/lib/filters/filter-persistent.c b/lib/filters/filter-persistent.c
  
  struct pfilter {
  	char *file;
-@@ -33,6 +34,8 @@ struct pfilter {
- #define PF_BAD_DEVICE ((void *) 1)
- #define PF_GOOD_DEVICE ((void *) 2)
+@@ -60,6 +61,8 @@ static char* _bad_device = "bad";
+ #define PF_BAD_DEVICE ((void *) &_good_device)
+ #define PF_GOOD_DEVICE ((void *) &_bad_device)
  
 +static int _from_env = 0;
 +
  static int _init_hash(struct pfilter *pf)
  {
  	if (pf->devices)
-@@ -87,12 +90,75 @@ static int _read_array(struct pfilter *p
+@@ -110,12 +113,75 @@ static int _read_array(struct pfilter *pf, struct dm_config_tree *cft,
  	return 1;
  }
  
@@ -158,7 +162,7 @@ diff --git a/lib/filters/filter-persistent.c b/lib/filters/filter-persistent.c
  
  	if (obtain_device_list_from_udev()) {
  		if (!stat(pf->file, &info)) {
-@@ -182,6 +248,10 @@ static int _persistent_filter_dump(struc
+@@ -200,6 +266,10 @@ static int _persistent_filter_dump(struct dev_filter *f, int merge_existing)
  	int lockfd;
  	int r = 0;
  
