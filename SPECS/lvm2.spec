@@ -1,6 +1,6 @@
-%global package_speccommit c9ad06cfba92fc043c628aa0875523ab1067850d
+%global package_speccommit 2b33460664df9ff802649946efc547b2e9d01676
 %global usver 2.02.180
-%global xsver 18
+%global xsver 18.2
 %global xsrel %{xsver}%{?xscount}%{?xshash}
 %global package_srccommit v2_02_180
 %global device_mapper_version 1.02.149
@@ -132,6 +132,7 @@ Patch45: udev-rule-to-stop-device-mapper-running-blkid-on.patch
 Patch46: CA-289958-Revert-vgcreate-pvcreate-vgextend-don-t-use-a-device.patch
 Patch47: lvm-udev.patch
 Patch48: CA-384527-skip-nbd-device-scan-in-lvm-utilities.patch
+Patch49: CA-410086_filter_out_unnecessary_devices
 # BZ 1647718:
 # BZ 1656498:
 # BZ 1657640:
@@ -1018,6 +1019,12 @@ This package provides the python2 version of boom.
 %{?_cov_results_package}
 
 %changelog
+* Thu May  1 2025 Mark Syms <mark.syms@cloud.com> - 7:2.02.180-18.2
+- Rebuild
+
+* Wed Apr 30 2025 Mark Syms <mark.syms@cloud.com> - 7:2.02.180-18.1
+- Update scan search root and add device filters
+
 * Thu Jul 11 2024 Lin Liu <Lin.Liu01@cloud.com> - 7:2.02.180-18
 - CP-46075: Disable cluster and cmirror as not used and introduce extra deps
 

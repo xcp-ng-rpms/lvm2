@@ -1,0 +1,38 @@
+From 60b9952e9c0d7b563815f50c9c78f929f6cf04ba Mon Sep 17 00:00:00 2001
+From: Mark Syms <mark.syms@cloud.com>
+Date: Tue, 29 Apr 2025 18:10:53 +0100
+Subject: [PATCH] CA-410086: filter out unnecessary devices
+
+The default configuration of LVM2 results in the `lvs` and `vgs`
+commands performing a lot of unnecessary work by
+
+ 1. running stat and lstat on everyting in and below `/dev/`
+ 2. Opening all the block devices it finds and reading the first 128K
+ from them, including the Logical Volumes which form the SR VDIs for
+ the LVM based XenServer SR.
+
+Restrict the search and add filter exclusions to avoid both of these
+and perform less work in the scan operations which form a core part of
+the SR control plane operations.
+diff --git a/conf/example.conf.in b/conf/example.conf.in
+index 94c87293a..a3f836409 100644
+--- a/conf/example.conf.in
++++ b/conf/example.conf.in
+@@ -57,7 +57,7 @@ devices {
+ 	# Configuration option devices/scan.
+ 	# Directories containing device nodes to use with LVM.
+ 	# This configuration option is advanced.
+-	scan = [ "/dev" ]
++	scan = [ "/dev/disk/by-id" ]
+ 
+ 	# Configuration option devices/obtain_device_list_from_udev.
+ 	# Obtain the list of available devices from udev.
+@@ -140,7 +140,7 @@ devices {
+ 	# This configuration option has an automatic default value.
+ 	# filter = [ "a|.*/|" ]
+ 
+-	filter = [ "r|/dev/nbd|" ]
++	filter = [ "r|/dev/disk/by-id/dm-name-VG_XenStorage.*|",  "r|/dev/disk/by-id/dm-uuid-LVM-.*|", "r|/dev/disk/by-id/dm-name-XSLocal.*|" ]
+ 
+ 	# Configuration option devices/global_filter.
+ 	# Limit the block devices that are used by LVM system components.
