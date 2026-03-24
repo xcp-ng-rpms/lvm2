@@ -79,7 +79,7 @@ Summary: Userland logical volume management tools
 Name: lvm2
 Version: %{lvm2_version}
 Epoch: %{lvm2_epoch}
-Release: %{?xsrel}.1%{?dist}
+Release: %{?xsrel}.2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 Provides: xenserver-lvm2
@@ -136,6 +136,8 @@ Patch45: udev-rule-to-stop-device-mapper-running-blkid-on.patch
 Patch46: CA-289958-Revert-vgcreate-pvcreate-vgextend-don-t-use-a-device.patch
 Patch47: lvm-udev.patch
 Patch48: CA-384527-skip-nbd-device-scan-in-lvm-utilities.patch
+
+Patch100: lvm2-sysfsfix-7754760.patch
 # BZ 1647718:
 # BZ 1656498:
 # BZ 1657640:
@@ -1023,6 +1025,9 @@ This package provides the python2 version of boom.
 %{?_cov_results_package}
 
 %changelog
+* Tue Mar 24 2026 Guillaume Lécroart <ggithub@lecroart.com> - 7:2.02.180-16-2
+- V/7754760 - Avoid unnecessary sysfs lookups
+
 * Tue Jun 18 2024 Samuel Verschelde <stormi-xcp@ylix.fr> - 7:2.02.180-16.1
 - Rebase on 7:2.02.180-16
 - *** Ustream changelog ***

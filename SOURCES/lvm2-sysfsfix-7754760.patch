@@ -1,0 +1,6 @@
+--- a/lib/device/dev-cache.c   2026-03-24 12:24:38.124152690 +0100
++++ b/lib/device/dev-cache.c   2026-03-24 12:27:42.129253063 +0100
+@@ -1594,2 +1594,3 @@
+       if (!d) {
++              if(MAJOR(dev)==0) return NULL;
+               sysfs_dir = dm_sysfs_dir();
