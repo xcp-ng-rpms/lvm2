@@ -1,0 +1,48 @@
+From 8f7b4456ad93c3907a82fd03d0feceb9785e3bfc Mon Sep 17 00:00:00 2001
+From: David Teigland <teigland@redhat.com>
+Date: Thu, 5 Jan 2023 14:28:31 -0600
+Subject: [PATCH 1/3] vgimportclone: fix importing PV without metadata
+
+If one of the PVs in the VG does not hold metadata, then the
+command would fail, thinking that PV was from a different VG.
+Also add missing free on that error path.
+
+(cherry picked from commit c4b898a53eec39bc28b5451e7fde87945303a644)
+---
+ tools/vgimportclone.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/tools/vgimportclone.c b/tools/vgimportclone.c
+index 60ef20762..93fa3b18d 100644
+--- a/tools/vgimportclone.c
++++ b/tools/vgimportclone.c
+@@ -203,7 +203,7 @@ int vgimportclone(struct cmd_context *cmd, int argc, char **argv)
+ 	struct device *dev;
+ 	struct device_list *devl;
+ 	struct dm_list other_devs;
+-	struct volume_group *vg, *error_vg;
++	struct volume_group *vg, *error_vg = NULL;
+ 	const char *vgname;
+ 	char base_vgname[NAME_LEN] = { 0 };
+ 	char tmp_vgname[NAME_LEN] = { 0 };
+@@ -322,7 +322,7 @@ int vgimportclone(struct cmd_context *cmd, int argc, char **argv)
+ 			goto out;
+ 		}
+ 
+-		if (!(vgname = lvmcache_vgname_from_info(info))) {
++		if (!(vgname = lvmcache_vgname_from_info(info)) || is_orphan_vg(vgname)) {
+ 			/* The PV may not have metadata, this will be resolved in
+ 			   the process_each_vg/vg_read at the end. */
+ 			continue;
+@@ -503,6 +503,8 @@ retry_name:
+ 	}
+ 	ret = ECMD_PROCESSED;
+ out:
++	if (error_vg)
++		release_vg(error_vg);
+ 	unlock_devices_file(cmd);
+ 	return ret;
+ }
+-- 
+2.39.1
+
