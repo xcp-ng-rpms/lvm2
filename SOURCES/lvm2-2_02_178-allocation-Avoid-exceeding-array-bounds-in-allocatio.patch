@@ -1,0 +1,47 @@
+From ce8663ee13e68b8f21dce6e2cf612d3809519787 Mon Sep 17 00:00:00 2001
+From: Alasdair G Kergon <agk@redhat.com>
+Date: Wed, 10 Jan 2018 02:03:32 +0000
+Subject: [PATCH 12/25] allocation: Avoid exceeding array bounds in allocation
+ tag code
+
+If _limit_to_one_area_per_tag() changes nothing it writes beyond
+the array.
+
+(cherry picked from commit bacc94233368cf136b55e2574e969e7f53b31c6c)
+
+Conflicts:
+	WHATS_NEW
+---
+ WHATS_NEW               | 4 ++++
+ lib/metadata/lv_manip.c | 3 ++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 2163a5e..9375a86 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,3 +1,7 @@
++Version 2.02.178 - 
++=====================================
++  Avoid exceeding array bounds in allocation tag processing.
++
+ Version 2.02.177 - 18th December 2017
+ =====================================
+   When writing text metadata content, use complete 4096 byte blocks.
+diff --git a/lib/metadata/lv_manip.c b/lib/metadata/lv_manip.c
+index 70dc2d9..ac30dad 100644
+--- a/lib/metadata/lv_manip.c
++++ b/lib/metadata/lv_manip.c
+@@ -2737,7 +2737,8 @@ static int _limit_to_one_area_per_tag(struct alloc_handle *ah, struct alloc_stat
+ 		s++;
+ 	}
+ 
+-	alloc_state->areas[u].pva = NULL;
++	if (u < alloc_state->areas_size)
++		alloc_state->areas[u].pva = NULL;
+ 
+ 	return 1;
+ }
+-- 
+1.8.3.1
+

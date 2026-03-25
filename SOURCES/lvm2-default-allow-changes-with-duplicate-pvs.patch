@@ -1,0 +1,30 @@
+ conf/example.conf.in  | 2 +-
+ lib/config/defaults.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/conf/example.conf.in b/conf/example.conf.in
+index 4894d04..48afbd1 100644
+--- a/conf/example.conf.in
++++ b/conf/example.conf.in
+@@ -311,7 +311,7 @@ devices {
+ 	# or activating LVs in it while a PV appears on multiple devices.
+ 	# Enabling this setting allows the VG to be used as usual even with
+ 	# uncertain devices.
+-	allow_changes_with_duplicate_pvs = 0
++	allow_changes_with_duplicate_pvs = 1
+ }
+ 
+ # Configuration section allocation.
+diff --git a/lib/config/defaults.h b/lib/config/defaults.h
+index d9e19d9..894b979 100644
+--- a/lib/config/defaults.h
++++ b/lib/config/defaults.h
+@@ -45,7 +45,7 @@
+ #define DEFAULT_DATA_ALIGNMENT_DETECTION 1
+ #define DEFAULT_ISSUE_DISCARDS 0
+ #define DEFAULT_PV_MIN_SIZE_KB 2048
+-#define DEFAULT_ALLOW_CHANGES_WITH_DUPLICATE_PVS 0
++#define DEFAULT_ALLOW_CHANGES_WITH_DUPLICATE_PVS 1
+ 
+ #define DEFAULT_LOCKING_LIB "liblvm2clusterlock.so"
+ #define DEFAULT_ERROR_WHEN_FULL 0

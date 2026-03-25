@@ -1,0 +1,21 @@
+ libdm/.exported_symbols.DM_1_02_107 | 1 +
+ libdm/.exported_symbols.DM_1_02_110 | 1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libdm/.exported_symbols.DM_1_02_107 b/libdm/.exported_symbols.DM_1_02_107
+index 89d3464..0c7b7af 100644
+--- a/libdm/.exported_symbols.DM_1_02_107
++++ b/libdm/.exported_symbols.DM_1_02_107
+@@ -13,3 +13,4 @@ dm_stats_create_region
+ dm_stats_driver_supports_histogram
+ dm_stats_get_histogram
+ dm_stats_get_region_nr_histogram_bins
++dm_tree_node_size_changed
+diff --git a/libdm/.exported_symbols.DM_1_02_110 b/libdm/.exported_symbols.DM_1_02_110
+index eba5625..da742ee 100644
+--- a/libdm/.exported_symbols.DM_1_02_110
++++ b/libdm/.exported_symbols.DM_1_02_110
+@@ -1,3 +1,2 @@
+ dm_report_compact_given_fields
+ dm_hold_control_dev
+-dm_tree_node_size_changed
