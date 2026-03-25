@@ -1,0 +1,36 @@
+ WHATS_NEW                  | 4 ++++
+ lib/metadata/cache_manip.c | 5 -----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/WHATS_NEW b/WHATS_NEW
+index 546d3e6..17aff08 100644
+--- a/WHATS_NEW
++++ b/WHATS_NEW
+@@ -1,3 +1,7 @@
++Version 2.02.182 - 
++==============================
++  Do not pair cache policy and cache metadata format.
++
+ Version 2.02.181 - 
+ =================================
+   Reject conversions on raid1 LVs with split tracked SubLVs.
+diff --git a/lib/metadata/cache_manip.c b/lib/metadata/cache_manip.c
+index c15f117..8376bfb 100644
+--- a/lib/metadata/cache_manip.c
++++ b/lib/metadata/cache_manip.c
+@@ -843,15 +843,10 @@ int cache_set_metadata_format(struct lv_segment *seg, cache_metadata_format_t fo
+ 
+ 	/*
+ 	 * If policy is unselected, but format 2 is selected, policy smq is enforced.
+-	 * ATM no other then smq & cleaner policy is allowed to select format 2.
+ 	 */
+ 	if (!seg->policy_name) {
+ 		if (format == CACHE_METADATA_FORMAT_2)
+ 			seg->policy_name = "smq";
+-	} else if (strcmp(seg->policy_name, "smq") &&
+-		   strcmp(seg->policy_name, "cleaner")) {
+-		seg->cache_metadata_format = CACHE_METADATA_FORMAT_1;
+-		return 1;
+ 	}
+ 
+ 	/* Check if we need to search for configured cache metadata format */

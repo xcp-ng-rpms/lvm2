@@ -1,4 +1,4 @@
-%global device_mapper_version 1.02.146
+%global device_mapper_version 1.02.149
 
 %global enable_cache 1
 %global enable_cluster 1
@@ -20,15 +20,18 @@
 %global libselinux_version 1.30.19-4
 %global persistent_data_version 0.7.0-0.1.rc6
 %global sanlock_version 3.3.0-1
-%global boom_version 0.8.5
+%global boom_version 0.9
 
 %global enable_lockd_sanlock %{enable_lvmlockd}
 %global enable_lockd_dlm %{enable_lvmlockd}
 
 %global boom_pkgname lvm2-python-boom
-%global boom_version 0.8.5
+%global boom_version 0.9
+%global boom_release 14
 %global boom_summary A set of libraries and tools for managing boot loader entries
 %global boom_dir boom-%{boom_version}
+
+#%%global scratch .bz1628529_4
 
 %if 0%{?rhel}
   %ifnarch i686 x86_64 ppc64le s390x
@@ -63,8 +66,8 @@
 Summary: Userland logical volume management tools 
 Name: lvm2
 Epoch: 7
-Version: 2.02.177
-Release: 4%{?dist}
+Version: 2.02.180
+Release: 10%{?dist}.3%{?scratch}
 License: GPLv2
 Group: System Environment/Base
 URL: http://sources.redhat.com/lvm2
@@ -76,35 +79,53 @@ Patch2: lvm2-fix-libdm-versioning-for-dm_tree_node_size_changed-symbol.patch
 Patch3: lvm2-drop-unavailable-libblkid-2_24-BLKID_SUBLKS_BADCSUM-for-signature-detection.patch
 Patch4: lvm2-default-allow-changes-with-duplicate-pvs.patch
 Patch5: lvm2-rhel7-fix-StartLimitInterval.patch
-Patch6: lvm2-2_02_178-lvmlockd-clear-coverity-complaint.patch
-Patch7: lvm2-2_02_178-man-lvmlockd-update-wording.patch
-Patch8: lvm2-2_02_178-lvmlockd-add-lockopt-values-for-skipping-selected-lo.patch
-Patch9: lvm2-2_02_178-lvmlockd-print-warning-when-skipping-locking.patch
-Patch10: lvm2-2_02_178-man-lvmlockd-remove-lv-resizing-comment.patch
-Patch11: lvm2-2_02_178-allocation-Avoid-exceeding-array-bounds-in-allocatio.patch
-Patch12: lvm2-2_02_178-lvconvert-use-excl-activation-for-conversion.patch
-Patch13: lvm2-2_02_178-pvmove-fix-_remove_sibling_pvs_from_trim_list.patch
-Patch14: lvm2-2_02_178-pvmove-better-check-for-exclusive-LV.patch
-Patch15: lvm2-2_02_178-pvmove-drop-misleading-pvmove-restriction-for-cluste.patch
-Patch16: lvm2-2_02_178-dmeventd-add-check-for-result-code.patch
-Patch17: lvm2-2_02_178-activation-guard-exclusive-activation.patch
-Patch18: lvm2-2_02_178-cleanup-enhance-messages.patch
-Patch19: lvm2-2_02_178-cleanup-drop-unused-code.patch
-Patch20: lvm2-2_02_178-tests-properly-test-with-clustered-VG.patch
-Patch21: lvm2-2_02_178-tests-check-preserved-exclusivness-of-snapshot-merge.patch
-Patch22: lvm2-2_02_178-tests-longer-startup-timeout-for-daemons-with-valgri.patch
-Patch23: lvm2-2_02_178-tests-check-pvmove-is-merging-segments.patch
-Patch24: lvm2-2_02_178-activation-move-check-later.patch
-Patch25: lvm2-2_02_178-libdm-accept-mirror-status-with-userspace-word-in-th.patch
-Patch26: lvm2-2_02_178-pvmove-reinstantiate-clustered-pvmove.patch
-Patch27: lvm2-2_02_178-mirror-Add-deprecation-warning-for-mirrored-log.patch
-Patch28: lvm2-2_02_178-locking-exclusive-can-be-either-remote-or-local.patch
-Patch29: lvm2-2_02_178-pvmove-enhance-accepted-states-of-active-LVs.patch
+Patch6: lvm2-rhel7-add-lvm1-and-pool-back.patch
+Patch7: lvm2-2_02_180-make-generate.patch
+Patch8: lvm2-2_02_181-post-release.patch
+Patch9: lvm2-2_02_181-lvconvert-restrict-command-matching-for-no-option-va.patch
+Patch10: lvm2-2_02_181-lvconvert-improve-text-about-splitmirrors.patch
+Patch11: lvm2-2_02_181-lvconvert-reject-conversions-of-LVs-under-snapshot.patch
+Patch12: lvm2-2_02_181-dmsetup-fix-error-propagation-in-_display_info_cols.patch
+Patch13: lvm2-2_02_181-reject-conversions-trackchanges-SubLVs.patch
+Patch14: lvm2-2_02_181-reject-conversions-trackchanges-LVs.patch
+Patch15: lvm2-2_02_181-dmeventd-base-vdo-plugin.patch
+Patch16: lvm2-2_02_181-dmeventd-rebase-to-stable-branch.patch
+Patch17: lvm2-2_02_181-WHATS_NEW.patch
+Patch18: lvm2-2_02_181-build-make-generate.patch
+Patch19: lvm2-2_02_182-vgcreate-close-exclusive-fd-after-pvcreate.patch
+Patch20: lvm2-2_02_182-mirrors-fix-read_only_volume_list.patch
+Patch21: lvm2-2_02_182-cache-drop-metadata_format-validation.patch
+Patch22: lvm2-2_02_182-mirror-fix-splitmirrors-for-mirror-type.patch
+Patch23: lvm2-2_02_182-lvconvert-fix-direct-raid0-to-striped-conversion.patch
+Patch24: lvm2-2_02_182-lvconvert-fix-conversion-attempts-to-linear.patch
+Patch25: lvm2-2_02_182-dmeventd-lvm2-plugin-uses-envvar-registry.patch
+Patch26: lvm2-2_02_182-scripts-add-After-rbdmap.service-to-lvm2-activation.patch
+Patch27: lvm2-2_02_182-lvconvert-avoid-superfluous-interim-raid-type.patch
+Patch28: lvm2-2_02_182-lvconvert-fix-interim-segtype-regression-on-raid6-co.patch
+Patch29: lvm2-2_02_182-fix-clustered-mirror-repair.patch
+Patch30: lvm2-2_02_182-metadata-prevent-writing-beyond-metadata-area.patch
+# BZ 1647718:
+Patch31: lvm2-2_02_183-libdm-stats-move-no-regions-warning-after-dm_stats_l.patch
+Patch32: lvm2-2_02_183-dmsetup-fix-stats-report-command-output.patch
+# BZ 1656498:
+Patch33: lvm2-2_02_183-io-use-sync-io-if-aio-fails.patch
+Patch34: lvm2-2_02_183-bcache-sync-io-fixes.patch
+Patch35: lvm2-2_02_183-WHATS_NEW-sync-io.patch
+# BZ 1657640:
+Patch36: lvm2-2_02_182-scan-use-full-md-filter-when-md-1.0-devices-are-pres.patch
+Patch37: lvm2-2_02_182-scan-enable-full-md-filter-when-md-1.0-devices-are-p.patch
+Patch38: lvm2-2_02_183-scan-md-metadata-version-0.90-is-at-the-end-of-disk.patch
+Patch39: lvm2-2_02_183-pvscan-lvmetad-use-full-md-filter-when-md-1.0-device.patch
+Patch40: lvm2-2_02_183-pvscan-lvmetad-use-udev-info-to-improve-md-component.patch
+# Overhead:
+Patch41: lvm2-2_02_183-build-make-generate.patch
+Patch42: lvm2-2_02_183-WHATS_NEW.patch
 
 BuildRequires: libselinux-devel >= %{libselinux_version}, libsepol-devel
 BuildRequires: libblkid-devel >= %{util_linux_version}
 BuildRequires: ncurses-devel
 BuildRequires: readline-devel
+BuildRequires: libaio-devel
 %if %{enable_cluster}
 BuildRequires: corosynclib-devel >= %{corosync_version}
 %endif
@@ -157,30 +178,43 @@ or more physical volumes and creating one or more logical volumes
 %patch3 -p1 -b .blkid_sublks_badcsum
 %patch4 -p1 -b .default_allow_dup
 %patch5 -p1 -b .startlimitinterval
-%patch6 -p1 -b .6lvmlockd_clear_coverity_complaint
-%patch7 -p1 -b .7man_lvmlockd_update_wording
-%patch8 -p1 -b .8lvmlockd_add_lockopt_values_for_skipping_selected_lo
-%patch9 -p1 -b .9lvmlockd_print_warning_when_skipping_locking
-%patch10 -p1 -b .10man_lvmlockd_remove_lv_resizing_comment
-%patch11 -p1 -b .11allocation_Avoid_exceeding_array_bounds_in_allocatio
-%patch12 -p1 -b .12lvconvert_use_excl_activation_for_conversion
-%patch13 -p1 -b .13pvmove_fix__remove_sibling_pvs_from_trim_list
-%patch14 -p1 -b .14pvmove_better_check_for_exclusive_LV
-%patch15 -p1 -b .15pvmove_drop_misleading_pvmove_restriction_for_cluste
-%patch16 -p1 -b .16dmeventd_add_check_for_result_code
-%patch17 -p1 -b .17activation_guard_exclusive_activation
-%patch18 -p1 -b .18cleanup_enhance_messages
-%patch19 -p1 -b .19cleanup_drop_unused_code
-%patch20 -p1 -b .20tests_properly_test_with_clustered_VG
-%patch21 -p1 -b .21tests_check_preserved_exclusivness_of_snapshot_merge
-%patch22 -p1 -b .22tests_longer_startup_timeout_for_daemons_with_valgri
-%patch23 -p1 -b .23tests_check_pvmove_is_merging_segments
-%patch24 -p1 -b .24activation_move_check_later
-%patch25 -p1 -b .25libdm_mirror_status_userspace
-%patch26 -p1 -b .26clustered_pvmove
-%patch27 -p1 -b .27deprecation_warning_for_mirrored_log
-%patch28 -p1 -b .28locking_ex_either_remote_or_local
-%patch29 -p1 -b .29pvmove_enhance_accepted_states_of_active_LVs
+%patch6 -p1 -b .add_lvm1_and_pool
+%patch7 -p1 -b .make_generate
+%patch8 -p1 -b .post_release
+%patch9 -p1 -b .lvconvert_matching_no_option
+%patch10 -p1 -b .lvconvert_text_splitmirrors
+%patch11 -p1 -b .reject_conversions_under_snapshot
+%patch12 -p1 -b .dmsetup_fix_error_display_info_cols
+%patch13 -p1 -b .reject_conversions_trackchage_LVs
+%patch14 -p1 -b .reject_conversions_trackchang_subLVs
+%patch15 -p1 -b .dmeventd_base_vdo_plugin
+%patch16 -p1 -b .dmeventd_rebase_to_stable_branch
+%patch17 -p1 -b .WHATS_NEW
+%patch18 -p1 -b .build_make_generate
+%patch19 -p1 -b .close_excl_fd_after_pvcreate
+%patch20 -p1 -b .mirrors_fix_RO_volume_list
+%patch21 -p1 -b .cache_drop_metadata_format_validation
+%patch22 -p1 -b .mirror_fix_splitmirrors
+%patch23 -p1 -b .direct_raid0_to_striped_conversion
+%patch24 -p1 -b .fix_conversion_to_linear
+%patch25 -p1 -b .dmeventd_lvm2_plugin_uses_envvar_registry
+%patch26 -p1 -b .lvm2_activation_after_rdbmap
+%patch27 -p1 -b .avoid_superfluous_raid_conversion
+%patch28 -p1 -b .fix_interim_segtype_on_raid6
+%patch29 -p1 -b .fix_clvmd_mirror
+%patch30 -p1 -b .prevent_writing_beyond_MDA
+%patch31 -p1 -b .libdm_stats_move_no_regions_warning_after_dm_stats_l
+%patch32 -p1 -b .dmsetup_fix_stats_report_command_output
+%patch33 -p1 -b .io_use_sync_io_if_aio_fails
+%patch34 -p1 -b .bcache_sync_io_fixes
+%patch35 -p1 -b .WHATS_NEW_sync_io
+%patch36 -p1 -b .scan_use_full_md_filter_when_md_1_0_devices_are_pres
+%patch37 -p1 -b .scan_enable_full_md_filter_when_md_1_0_devices_are_p
+%patch38 -p1 -b .scan_md_metadata_version_0_90_is_at_the_end_of_disk
+%patch39 -p1 -b .pvscan_lvmetad_use_full_md_filter_when_md_1_0_device
+%patch40 -p1 -b .pvscan_lvmetad_use_udev_info_to_improve_md_component
+%patch41 -p1 -b .build_make_generate2
+%patch42 -p1 -b .WHATS_NEW2
 
 %build
 %global _default_pid_dir /run
@@ -538,6 +572,10 @@ This package contains shared lvm2 libraries for applications.
 %{_libdir}/libdevmapper-event-lvm2thin.so
 %{_libdir}/device-mapper/libdevmapper-event-lvm2thin.so
 %endif
+
+%{_libdir}/device-mapper/libdevmapper-event-lvm2vdo.so
+%{_libdir}/libdevmapper-event-lvm2vdo.so
+
 
 %if %{enable_python}
 
@@ -924,10 +962,12 @@ the device-mapper event library.
 %package -n %{boom_pkgname}
 Summary: %{boom_summary}
 Version: %{boom_version}
+Release: %{boom_release}%{?dist}.2%{?scratch}
 License: GPLv2
 Group: System Environment/Base
 BuildArch: noarch
 %{?python_provide:%python_provide python2-boom}
+Requires: grub2
 
 %description -n %{boom_pkgname}
 Boom is a boot manager for Linux systems using boot loaders that support
@@ -953,6 +993,81 @@ This package provides the python2 version of boom.
 %endif
 
 %changelog
+* Mon Dec 17 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-10.el7_6.3
+- Fix component detection for MD RAID version 1.0 and 0.90.
+- Use sync io if async io_setup fails, or when use_aio=0 is set in config.
+- Fix dmstats report printing no output.
+
+* Wed Oct 31 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-10.el7_6.2
+- Fix possible write beyond metadata area.
+
+* Wed Oct 10 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-10.el7_6.1
+- Fix clustered mirror repair.
+
+* Mon Sep 10 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-8
+- Fix lvconvert striped/raid0/raid0_meta to raid6 regression.
+
+* Wed Sep 05 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-7
+- Fix ordering of lvm2 activation and rbdmap services.
+- Fix to avoid locking collisions when monitoring thin-pools.
+
+* Fri Aug 24 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-6
+- Fix direct RAID0 to striped conversion.
+
+* Tue Aug 21 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-5
+- Fix direct RAID0 to striped conversion.
+
+* Tue Aug 21 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-3
+- Fix lvconvert --splitmirror for mirror type (2.02.178).
+- Do not pair cache policy and cache metadata format.
+- Fix mirrors honoring read_only_volume_list.
+- Fix vgcreate with sanlock when PVs are created automatically.
+
+* Tue Jul 31 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-2
+- Add vdo plugin for monitoring VDO devices.
+- Reject conversions on raid1 LVs with split tracked SubLVs.
+- Reject conversions on raid1 split tracked SubLVs.
+- Fix dmstats list failing when no regions exist.
+- Reject conversions of LVs under snapshot.
+- Limit suggested options on incorrect option for lvconvert subcommand.
+
+* Fri Jul 20 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.180-1
+- Never send any discard ioctl with test mode.
+- Fix thin-pool alloc which needs same PV for data and metadata.
+- Enhance vgcfgrestore to check for active LVs in restored VG.
+- Cache can use metadata format 2 with cleaner policy.
+- Fix lvmetad hanging on shutdown.
+- Fix check if resized PV can also fit metadata area.
+
+* Tue Jun 26 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.179-4
+- Rebuild man pages and config file (make generate.)
+
+* Tue Jun 26 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.179-3
+- Add convenient conversions between stripe and linear.
+- Fix snapshot hanging on shutdown.
+- Fix internal error in lvs while pvmove in progress.
+- Fix more coverity issues.
+- Improve message for pvresize.
+
+* Thu Jun 21 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.179-2
+- Fix issue caused by udev considering device open in RW mode a change.
+- Fix leaks and buffer overflow.
+- boom: Update to new minor release.
+
+* Mon Jun 18 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.179-1
+- Fixing known problems with cache and lvmlockd.
+
+* Thu Jun 14 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.178-1
+- Rework disk scanning and when it is used.
+- Add new io layer using libaio for faster scanning.
+- Support activation of component LVs in read-only mode.
+- Avoid non-exclusive activation of exclusive segment types.
+- Restore pvmove support for clusterwide active volumes (2.02.177).
+- Add prioritized_section() to restore cookie boundaries (2.02.177).
+- Again accept striped LV as COW LV with lvconvert -s (2.02.169).
+- Restore usability of thin LV to be again external origin for another thin (2.02.169).
+- See WHATS_NEW and WHATS_NEW_DM in the documentation directory for more.
+
 * Fri Feb 16 2018 Marian Csontos <mcsontos@redhat.com> - 7:2.02.177-4
 - pvmove enhance accepted states of active LVs.
 - boom: Remove debug output.

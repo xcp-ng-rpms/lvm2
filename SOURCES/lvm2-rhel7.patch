@@ -3,17 +3,16 @@
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/VERSION b/VERSION
-index 849efb0..996ced9 100644
+index 9e5739e..98731d0 100644
 --- a/VERSION
 +++ b/VERSION
 @@ -1 +1 @@
--2.02.177(2) (2017-12-18)
-+2.02.177(2)-RHEL7 (2018-01-22)
+-2.02.180(2) (2018-07-19)
++2.02.180(2)-RHEL7 (2018-07-20)
 diff --git a/VERSION_DM b/VERSION_DM
-index a37f632..1853e94 100644
+index 88fc33b..1da204c 100644
 --- a/VERSION_DM
 +++ b/VERSION_DM
 @@ -1 +1 @@
--1.02.146 (2017-12-18)
-+1.02.146-RHEL7 (2018-01-22)
-
+-1.02.149 (2018-07-19)
++1.02.149-RHEL7 (2018-07-20)

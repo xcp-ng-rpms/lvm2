@@ -1,0 +1,53 @@
+ lib/label/label.c | 6 +++---
+ tools/toollib.c   | 7 +++++++
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/lib/label/label.c b/lib/label/label.c
+index ac37713..bafa543 100644
+--- a/lib/label/label.c
++++ b/lib/label/label.c
+@@ -1190,7 +1190,7 @@ bool dev_write_bytes(struct device *dev, uint64_t start, size_t len, void *data)
+ 		return false;
+ 	}
+ 
+-	if (!(dev->flags & DEV_BCACHE_WRITE)) {
++	if (_in_bcache(dev) && !(dev->flags & DEV_BCACHE_WRITE)) {
+ 		/* FIXME: avoid tossing out bcache blocks just to replace fd. */
+ 		log_debug("Close and reopen to write %s", dev_name(dev));
+ 		bcache_invalidate_fd(scan_bcache, dev->bcache_fd);
+@@ -1236,7 +1236,7 @@ bool dev_write_zeros(struct device *dev, uint64_t start, size_t len)
+ 		return false;
+ 	}
+ 
+-	if (!(dev->flags & DEV_BCACHE_WRITE)) {
++	if (_in_bcache(dev) && !(dev->flags & DEV_BCACHE_WRITE)) {
+ 		/* FIXME: avoid tossing out bcache blocks just to replace fd. */
+ 		log_debug("Close and reopen to write %s", dev_name(dev));
+ 		bcache_invalidate_fd(scan_bcache, dev->bcache_fd);
+@@ -1282,7 +1282,7 @@ bool dev_set_bytes(struct device *dev, uint64_t start, size_t len, uint8_t val)
+ 		return false;
+ 	}
+ 
+-	if (!(dev->flags & DEV_BCACHE_WRITE)) {
++	if (_in_bcache(dev) && !(dev->flags & DEV_BCACHE_WRITE)) {
+ 		/* FIXME: avoid tossing out bcache blocks just to replace fd. */
+ 		log_debug("Close and reopen to write %s", dev_name(dev));
+ 		bcache_invalidate_fd(scan_bcache, dev->bcache_fd);
+diff --git a/tools/toollib.c b/tools/toollib.c
+index b60ff06..e1c86f9 100644
+--- a/tools/toollib.c
++++ b/tools/toollib.c
+@@ -5897,6 +5897,13 @@ do_command:
+ 					pd->name);
+ 	}
+ 
++	/*
++	 * Don't keep devs open excl in bcache because the excl will prevent
++	 * using that dev elsewhere.
++	 */
++	dm_list_iterate_items(devl, &rescan_devs)
++		label_scan_invalidate(devl->dev);
++
+ 	dm_list_iterate_items(pd, &pp->arg_fail)
+ 		log_debug("%s: command failed for %s.",
+ 			  cmd->command->name, pd->name);

@@ -1,13 +1,13 @@
  configure             | 20 ++++++++++----------
- configure.in          |  4 ++--
+ configure.ac          |  4 ++--
  lib/device/dev-type.c |  3 +--
  3 files changed, 13 insertions(+), 14 deletions(-)
 
 diff --git a/configure b/configure
-index d04b9d3..4f6e7d7 100755
+index 7d945df..ef24b31 100755
 --- a/configure
 +++ b/configure
-@@ -12322,12 +12322,12 @@ if test -n "$BLKID_CFLAGS"; then
+@@ -12111,12 +12111,12 @@ if test -n "$BLKID_CFLAGS"; then
      pkg_cv_BLKID_CFLAGS="$BLKID_CFLAGS"
   elif test -n "$PKG_CONFIG"; then
      if test -n "$PKG_CONFIG" && \
@@ -23,7 +23,7 @@ index d04b9d3..4f6e7d7 100755
  		      test "x$?" != "x0" && pkg_failed=yes
  else
    pkg_failed=yes
-@@ -12339,12 +12339,12 @@ if test -n "$BLKID_LIBS"; then
+@@ -12128,12 +12128,12 @@ if test -n "$BLKID_LIBS"; then
      pkg_cv_BLKID_LIBS="$BLKID_LIBS"
   elif test -n "$PKG_CONFIG"; then
      if test -n "$PKG_CONFIG" && \
@@ -39,7 +39,7 @@ index d04b9d3..4f6e7d7 100755
  		      test "x$?" != "x0" && pkg_failed=yes
  else
    pkg_failed=yes
-@@ -12365,9 +12365,9 @@ else
+@@ -12154,9 +12154,9 @@ else
          _pkg_short_errors_supported=no
  fi
          if test $_pkg_short_errors_supported = yes; then
@@ -51,7 +51,7 @@ index d04b9d3..4f6e7d7 100755
          fi
  	# Put the nasty error message in config.log where it belongs
  	echo "$BLKID_PKG_ERRORS" >&5
-@@ -12375,7 +12375,7 @@ fi
+@@ -12164,7 +12164,7 @@ fi
  	if test "$BLKID_WIPING" = maybe; then
  				BLKID_WIPING=no
  			   else
@@ -60,7 +60,7 @@ index d04b9d3..4f6e7d7 100755
  			   fi
  elif test $pkg_failed = untried; then
       	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-@@ -12383,7 +12383,7 @@ $as_echo "no" >&6; }
+@@ -12172,7 +12172,7 @@ $as_echo "no" >&6; }
  	if test "$BLKID_WIPING" = maybe; then
  				BLKID_WIPING=no
  			   else
@@ -69,11 +69,11 @@ index d04b9d3..4f6e7d7 100755
  			   fi
  else
  	BLKID_CFLAGS=$pkg_cv_BLKID_CFLAGS
-diff --git a/configure.in b/configure.in
-index d879408..ab8b585 100644
---- a/configure.in
-+++ b/configure.in
-@@ -1312,7 +1312,7 @@ AC_ARG_ENABLE(blkid_wiping,
+diff --git a/configure.ac b/configure.ac
+index e427708..935ea08 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1235,7 +1235,7 @@ AC_ARG_ENABLE(blkid_wiping,
  DEFAULT_USE_BLKID_WIPING=0
  if test "$BLKID_WIPING" != no; then
  	pkg_config_init
@@ -82,7 +82,7 @@ index d879408..ab8b585 100644
  			  [ BLKID_WIPING=yes
  			    BLKID_PC="blkid"
  			    DEFAULT_USE_BLKID_WIPING=1
-@@ -1320,7 +1320,7 @@ if test "$BLKID_WIPING" != no; then
+@@ -1243,7 +1243,7 @@ if test "$BLKID_WIPING" != no; then
  			  ], [if test "$BLKID_WIPING" = maybe; then
  				BLKID_WIPING=no
  			   else
@@ -92,10 +92,10 @@ index d879408..ab8b585 100644
  fi
  AC_MSG_CHECKING([whether to enable libblkid detection of signatures when wiping])
 diff --git a/lib/device/dev-type.c b/lib/device/dev-type.c
-index 9608146..1e45f9d 100644
+index af4b407..eda7982 100644
 --- a/lib/device/dev-type.c
 +++ b/lib/device/dev-type.c
-@@ -713,8 +713,7 @@ static int _wipe_known_signatures_with_blkid(struct device *dev, const char *nam
+@@ -712,8 +712,7 @@ static int _wipe_known_signatures_with_blkid(struct device *dev, const char *nam
  						 BLKID_SUBLKS_TYPE |
  						 BLKID_SUBLKS_USAGE |
  						 BLKID_SUBLKS_VERSION |
