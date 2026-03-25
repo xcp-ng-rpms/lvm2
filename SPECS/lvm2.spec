@@ -1,9 +1,9 @@
 %global device_mapper_version 1.02.187
 
 %global enable_cache 1
-%global enable_cluster 1
-%global enable_lvmdbusd 1
-%global enable_lvmlockd 1
+%global enable_cluster 0
+%global enable_lvmdbusd 0
+%global enable_lvmlockd 0
 %global enable_lvmpolld 1
 %global enable_thin 1
 %global enable_dmfilemapd 1
@@ -13,9 +13,9 @@
 %global enable_integrity 1
 
 %global system_release_version 23
-%global systemd_version 247-1
+%global systemd_version 189-3
 %global dracut_version 002-18
-%global util_linux_version 2.24
+%global util_linux_version 2.23
 %global bash_version 4.0
 %global corosync_version 1.99.9-1
 %global resource_agents_version 3.9.5-12
@@ -63,7 +63,7 @@ Version: 2.03.17
 #Release: 0.1.20211115git%{shortcommit}%{?dist}%{?rel_suffix}
 Release: 4%{?dist}%{?rel_suffix}
 %else
-Release: 7%{?dist}%{?rel_suffix}
+Release: 0%{?dist}%{?rel_suffix}
 %endif
 License: GPLv2
 URL: http://sourceware.org/lvm2
@@ -188,7 +188,7 @@ or more physical volumes and creating one or more logical volumes
   --enable-pkgconfig \
   --enable-cmdlib \
   --enable-dmeventd \
-  --enable-blkid_wiping \
+  --disable-blkid_wiping \
   %{?configure_cluster} \
   --with-udevdir=%{_udevdir} --enable-udev_sync \
 %if %{enable_thin}
@@ -223,8 +223,8 @@ or more physical volumes and creating one or more logical volumes
 %endif
   --with-default-use-devices-file=1 \
   --disable-silent-rules \
-  --enable-app-machineid \
-  --enable-editline \
+  --disable-app-machineid \
+  --disable-editline \
   --disable-readline
 
 V=1 %make_build
@@ -734,6 +734,9 @@ An extensive functional testsuite for LVM2.
 %endif
 
 %changelog
+* Wed Mar 25 2026 Philippe Coval <philippe.coval@vates.tech> - 2.03.17-7.0
+- Disabled features for XCP-ng 8.3
+
 * Thu Feb 16 2023 Marian Csontos <mcsontos@redhat.com> - 2.03.17-7
 - Fix segfault in previous build.
 
