@@ -148,21 +148,10 @@ or more physical volumes and creating one or more logical volumes
 
 %prep
 %if 0%{?from_snapshot}
-%setup -q -n lvm2-%{commit}
+%autosetup -p1 -n lvm2-%{commit}
 %else
-%setup -q -n LVM2.%{version}
+%autosetup -p1 -n LVM2.%{version}
 %endif
-%patch1 -p1 -b .backup1
-%patch2 -p1 -b .backup2
-%patch3 -p1 -b .backup3
-%patch4 -p1 -b .backup4
-%patch5 -p1 -b .backup5
-%patch6 -p1 -b .backup6
-%patch7 -p1 -b .backup7
-%patch8 -p1 -b .backup8
-%patch9 -p1 -b .backup9
-%patch10 -p1 -b .backup10
-%patch11 -p1 -b .backup11
 
 %build
 %global _default_pid_dir /run
@@ -735,6 +724,7 @@ An extensive functional testsuite for LVM2.
 
 %changelog
 * Wed Mar 25 2026 Philippe Coval <philippe.coval@vates.tech> - 2.03.17-7.0
+- Replace obsolete patch macro
 - Disable features for XCP-ng 8.3
 
 * Thu Feb 16 2023 Marian Csontos <mcsontos@redhat.com> - 2.03.17-7
