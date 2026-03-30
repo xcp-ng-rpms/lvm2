@@ -61,7 +61,7 @@ Epoch: %{rhel}
 Version: 2.03.17
 %if 0%{?from_snapshot}
 #Release: 0.1.20211115git%{shortcommit}%{?dist}%{?rel_suffix}
-Release: 4%{?dist}%{?rel_suffix}
+Release: 4%{?dist}%{?rel_suffix}~XCPNG3107.1
 %else
 Release: 0%{?dist}%{?rel_suffix}
 %endif
