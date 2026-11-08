@@ -1,0 +1,109 @@
+From: Olivier Lambert <olivier.lambert@vates.tech>
+Subject: [PATCH] Restore Patch44's LVM_DEVICE scan restriction on lvm2 >= 2.02.178
+
+Patch44 (scan_only_the_device_in_LVM_DEVICE_env.diff) makes an LVM command run by SM, which sets
+LVM_DEVICE=/dev/disk/by-scsid/<SCSIid>, look only at that SR's device. It relied on dev_cache_set_scanned(1)
+stopping the device scan. Since lvm2 2.02.178, label_scan() calls dev_cache_scan() unconditionally, which walks
+every scan directory and indexes the sysfs holders of every block device, so the patch has been a no-op: each SM
+LVM command reads every PV of the host, and its cost grows with the number of active LVs on the host (0.05 s on
+an empty host, 0.23 s with 828 active LVs, measured on a customer pool).
+
+This restores the 2.02.177 behaviour, for one device only, so that no duplicate PV can be seen:
+- when the LVM_DEVICE directory has a 'mapper' entry (the multipath map) or exactly one entry, and that entry
+  resolves to an existing block device, Patch44 loads only that device and dev_cache_scan() keeps to it;
+- any other layout (several paths and no mapper, a stale link, one path of a multipath map
+  /dev/mapper/<SCSIid> whose 'mapper' link isn't there yet) and any command without LVM_DEVICE behave
+  exactly as today.
+
+--- a/lib/filters/filter-persistent.c	2026-11-07 18:57:26.112925313 +0000
++++ b/lib/filters/filter-persistent.c	2026-11-08 02:00:06.101524336 +0000
+@@ -147,16 +147,42 @@
+ 	struct dm_config_tree *cft;
+ 	struct stat info;
+ 	int r = 0;
+-	int n, dirent_count;
++	int n, dirent_count, visible, mapper = 0;
++	const char *only, *sid;
+ 	struct dirent **dirent;
+-	char *path;
++	char *path = NULL;
+ 	char *envdir = getenv("LVM_DEVICE");
+ 
+ 	if(!cft_out && envdir) {
+ 		dirent_count = scandir(envdir, &dirent, NULL, alphasort);
++		/* XCP-ng: with a multipath map ('mapper') or a single entry, use only that device: no duplicate
++		 * PV can be seen, and the scan stays on it (dev_cache_scan). Otherwise, as before: every entry. */
++		for (n = 0, visible = 0, only = NULL; n < dirent_count; n++)
++			if (dirent[n]->d_name[0] != '.') {
++				if (!visible++ || !strcmp(dirent[n]->d_name, "mapper"))
++					only = dirent[n]->d_name;
++				if (!strcmp(dirent[n]->d_name, "mapper"))
++					mapper = 1;
++			}
++		if (visible != 1 && !mapper)
++			only = NULL;
++		if (only && (!(path = _join(envdir, only)) || stat(path, &info) || !S_ISBLK(info.st_mode)))
++			only = NULL;	/* a stale link: keep the old behaviour */
++		if (path) {
++			dm_free(path);
++			path = NULL;
++		}
++		/* one path of a multipath map whose 'mapper' link isn't there (yet): keep the old behaviour */
++		if (only && !mapper && (sid = strrchr(envdir, '/')) && (path = _join("/dev/mapper", sid + 1)) &&
++		    !stat(path, &info))
++			only = NULL;
++		if (path) {
++			dm_free(path);
++			path = NULL;
++		}
+ 		if (dirent_count > 0) {
+ 			for (n = 0; n < dirent_count; n++) {
+-				if (dirent[n]->d_name[0] == '.') {
++				if (dirent[n]->d_name[0] == '.' || (only && dirent[n]->d_name != only)) {
+ 					free(dirent[n]);
+ 					continue;
+ 				}
+@@ -178,6 +204,8 @@
+ 		if (dm_hash_get_num_entries(pf->devices)) {
+ 			/* We populated dev_cache ourselves */
+ 			dev_cache_set_scanned(1);
++			if (only)
++				dev_cache_set_restricted(1);
+ 			_from_env = 1;
+ 			return 1;
+ 		}
+--- a/lib/device/dev-cache.c	2026-11-07 18:57:26.112719516 +0000
++++ b/lib/device/dev-cache.c	2026-11-08 02:00:06.067357329 +0000
+@@ -1210,10 +1210,22 @@
+ 	_cache.has_scanned = scanned;
+ }
+ 
++/* XCP-ng: Patch44 loaded exactly one device from LVM_DEVICE; dev_cache_scan() keeps to it. */
++static int _restricted = 0;
++
++void dev_cache_set_restricted(int restricted)
++{
++	_restricted = restricted;
++}
++
+ void dev_cache_scan(void)
+ {
+ 	struct dir_list *dl;
+ 	
++	/* As before 2.02.178: label_scan() now calls this unconditionally, which made Patch44 a no-op. */
++	if (_restricted)
++		return;
++
+ 	log_debug_devs("Creating list of system devices.");
+ 
+ 	_cache.has_scanned = 1;
+--- a/lib/device/dev-cache.h	2026-11-07 18:57:26.112847470 +0000
++++ b/lib/device/dev-cache.h	2026-11-08 02:00:06.067684358 +0000
+@@ -48,6 +48,7 @@
+ 
+ void dev_cache_scan(void);
+ void dev_cache_set_scanned(int);
++void dev_cache_set_restricted(int);
+ int dev_cache_has_scanned(void);
+ 
+ int dev_cache_add_dir(const char *path);
